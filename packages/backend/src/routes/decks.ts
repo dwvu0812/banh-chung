@@ -1,14 +1,29 @@
 import { Router } from "express";
-import { createDeck, getDeck } from "../controllers/deckController";
+import {
+  createDeck,
+  getDeck,
+  updateDeck,
+  deleteDeck,
+  getDecks,
+} from "../controllers/deckController";
+import { createFlashcard } from "../controllers/flashcardController";
 import { protect } from "../middleware/authMiddleware";
 
 const router = Router();
+router.use(protect); // Áp dụng bảo vệ cho tất cả
 
-// Áp dụng middleware `protect` cho tất cả các route trong file này
-router.use(protect);
+router
+  .route("/")
+  .get(getDecks) // Lấy tất cả decks của user
+  .post(createDeck);
 
-router.post("/", createDeck); // POST /api/decks
+router
+  .route("/:id")
+  .get(getDeck)
+  .put(updateDeck) // Cập nhật deck
+  .delete(deleteDeck); // Xóa deck
 
-router.get("/:id", getDeck); // GET /api/decks/:id
+// Route để tạo card trong một deck cụ thể
+router.route("/:deckId/cards").post(createFlashcard);
 
 export default router;

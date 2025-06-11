@@ -45,3 +45,32 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).send("Server error");
   }
 };
+
+// @desc    Làm mới Access Token
+// @route   POST /api/auth/refresh
+// @access  Public (cần có refresh token)
+export const refreshToken = async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ msg: "No refresh token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET!
+    ) as { userId: string };
+
+    const payload = { userId: decoded.userId };
+    const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
+      expiresIn: "15m",
+    });
+
+    res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    // Nếu refresh token không hợp lệ hoặc hết hạn
+    console.error(error);
+    return res.status(403).json({ msg: "Invalid refresh token" });
+  }
+};

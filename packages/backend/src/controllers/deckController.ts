@@ -1,5 +1,6 @@
 import { Response } from "express";
 import Deck from "../models/Deck";
+import Flashcard from "../models/Flashcard";
 import { AuthRequest } from "@/middleware/authMiddleware";
 
 // @desc    Tạo một deck mới
@@ -50,6 +51,64 @@ export const getDeck = async (req: AuthRequest, res: Response) => {
     if (error.kind === "ObjectId") {
       return res.status(404).json({ msg: "Deck not found" });
     }
+    res.status(500).send("Server Error");
+  }
+};
+
+// ... hàm createDeck và getDeck đã có
+
+// @desc    Lấy tất cả decks của người dùng
+// @route   GET /api/decks
+// @access  Private
+export const getDecks = async (req: AuthRequest, res: Response) => {
+  try {
+    const decks = await Deck.find({ user: req.user?.userId });
+    res.json(decks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+};
+
+// @desc    Cập nhật thông tin deck
+// @route   PUT /api/decks/:id
+// @access  Private
+export const updateDeck = async (req: AuthRequest, res: Response) => {
+  const { name, description } = req.body;
+  try {
+    let deck = await Deck.findById(req.params.id);
+    if (!deck || deck.user.toString() !== req.user?.userId) {
+      return res.status(404).json({ msg: "Deck not found or access denied" });
+    }
+
+    deck.name = name || deck.name;
+    deck.description = description || deck.description;
+
+    const updatedDeck = await deck.save();
+    res.json(updatedDeck);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+};
+
+// @desc    Xóa một deck
+// @route   DELETE /api/decks/:id
+// @access  Private
+export const deleteDeck = async (req: AuthRequest, res: Response) => {
+  try {
+    const deck = await Deck.findById(req.params.id);
+    if (!deck || deck.user.toString() !== req.user?.userId) {
+      return res.status(404).json({ msg: "Deck not found or access denied" });
+    }
+
+    // Cũng cần xóa tất cả các card thuộc về deck này
+    await Flashcard.deleteMany({ deck: req.params.id });
+    await deck.deleteOne();
+
+    res.json({ msg: "Deck and associated cards removed" });
+  } catch (error) {
+    console.error(error);
     res.status(500).send("Server Error");
   }
 };
