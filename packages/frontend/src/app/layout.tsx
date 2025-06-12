@@ -1,3 +1,5 @@
+import { Toaster } from "@/components/ui/sonner";
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -19,6 +21,8 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body className={inter.className}>
         <QueryProvider>{children}</QueryProvider>
+
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );
