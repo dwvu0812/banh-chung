@@ -30,6 +30,7 @@ import { AxiosError } from "axios";
 // Assets
 import loginBg from "../../../../public/login.jpg";
 import { AtSign, Lock } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
 
 const formSchema = z.object({
   email: z
@@ -70,7 +71,6 @@ export default function LoginPage() {
         axiosError.response?.data?.msg ||
         "Email hoặc mật khẩu không chính xác.";
 
-      // <<<< THAY ĐỔI QUAN TRỌNG: Gọi toast.error
       toast.error("Đăng nhập thất bại", {
         description: errorMessage,
       });
@@ -79,10 +79,12 @@ export default function LoginPage() {
 
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
-      {/* Phần JSX không có thay đổi lớn */}
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-md">
-          <div className="mb-6 text-center">
+          <div className="mb-8 flex justify-center">
+            <Logo />
+          </div>
+          <div className="mb-6 text-left">
             <h1 className="text-3xl font-bold tracking-tight">
               Chào mừng trở lại!
             </h1>

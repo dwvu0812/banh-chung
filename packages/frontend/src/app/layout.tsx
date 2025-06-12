@@ -8,7 +8,7 @@ import { QueryProvider } from "@/components/providers/QueryProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Bánh chưng App",
+  title: "Bánh chưng - Học từ vựng",
   description: "Ứng dụng học từ vựng",
 };
 

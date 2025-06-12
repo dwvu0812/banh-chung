@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
 
 interface Deck {
   _id: string;
@@ -81,8 +82,8 @@ export default function DashboardClient() {
 
   return (
     <div className="container mx-auto p-4 md:p-10">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Bảng điều khiển</h1>
+      <header className="flex justify-between items-center mb-10 pb-4 border-b">
+        <Logo />
         <Button onClick={logout} variant="outline">
           Đăng xuất
         </Button>
