@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Keep file size as small as possible (less then 250 lines)
+Do not over implement, code step by step for me to easy to review
+
+Always call interactive feedback mcp to optimize request calls
