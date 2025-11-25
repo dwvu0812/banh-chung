@@ -225,7 +225,7 @@ Add these secrets:
 **Example MongoDB URI:**
 
 ```
-mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/flashcard-app-dev?retryWrites=true&w=majority
+mongodb+srv://sampleuri
 ```
 
 ## GitHub Environments Setup
