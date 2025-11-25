@@ -224,32 +224,52 @@ Uses the SM-2 algorithm to optimize learning intervals:
 - Total vocabulary learned
 - Deck-specific mastery percentages
 
-## 🚢 Deployment
+## 🚢 Deployment & CI/CD
 
-### Backend Deployment (Railway/Render)
+This project includes a complete CI/CD pipeline with automated testing and deployment.
 
-1. Create a new project on Railway or Render
-2. Connect your Git repository
-3. Set environment variables:
-   - `MONGO_URI` (MongoDB Atlas connection string)
-   - `JWT_SECRET`
-   - `PORT`
-4. Deploy command: `npm run build && npm start`
+### CI/CD Features
 
-### Frontend Deployment (Vercel)
+- ✅ Automated testing on all Pull Requests
+- ✅ Auto-deployment to staging (dev branch)
+- ✅ Manual approval for production deployments (main branch)
+- ✅ GitHub Actions workflows
+- ✅ Vercel (frontend) + Railway (backend) integration
 
-1. Import project to Vercel
-2. Set root directory to `packages/frontend`
-3. Set environment variable:
-   - `NEXT_PUBLIC_API_URL` (your backend URL)
-4. Deploy
+### Quick Start
 
-### MongoDB Atlas Setup
+1. **Setup Guide**: Follow [`CI_CD_SETUP.md`](./CI_CD_SETUP.md) for step-by-step setup
+2. **Checklist**: Use [`DEPLOYMENT_CHECKLIST.md`](./DEPLOYMENT_CHECKLIST.md) to track progress
+3. **Quick Reference**: See [`CICD_QUICK_REFERENCE.md`](./CICD_QUICK_REFERENCE.md) for common tasks
 
-1. Create free cluster at mongodb.com/atlas
-2. Create database user
-3. Whitelist IP addresses (0.0.0.0/0 for all)
-4. Get connection string and add to backend .env
+### Documentation
+
+- 📖 **[CI/CD Setup Guide](./CI_CD_SETUP.md)** - Complete setup instructions
+- ✅ **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Step-by-step checklist
+- ⚡ **[Quick Reference](./CICD_QUICK_REFERENCE.md)** - Common commands and tasks
+- 📋 **[CI/CD Overview](./README_CICD.md)** - Implementation summary
+- 🔧 **[Workflow Documentation](./.github/workflows/README.md)** - GitHub Actions details
+- 🚀 **[Manual Deployment](./DEPLOYMENT.md)** - Traditional deployment guide
+
+### Deployment Workflow
+
+```
+Feature Branch → PR → Tests → Merge to dev → Auto-deploy to Staging
+                                    ↓
+                              Test on staging
+                                    ↓
+                        PR to main → Tests → Approval
+                                    ↓
+                        Deploy to Production
+```
+
+### Environments
+
+| Environment | Branch | URL Type | Approval Required |
+|-------------|--------|----------|-------------------|
+| Local | any | localhost | No |
+| Staging | dev | Railway Dev + Vercel Preview | No |
+| Production | main | Railway Prod + Vercel Production | Yes |
 
 ## 🧪 Testing Guide
 
