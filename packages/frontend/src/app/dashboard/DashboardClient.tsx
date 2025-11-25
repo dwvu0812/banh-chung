@@ -29,7 +29,6 @@ import {
   ArrowRight,
   BookCopy,
   BrainCircuit,
-  History,
   Layers,
   PlusCircle,
   Target,
@@ -40,19 +39,29 @@ interface Deck {
   _id: string;
   name: string;
   description: string;
-  cardCount?: number; // Sẽ thêm từ backend sau
-  lastReviewed?: string; // Sẽ thêm từ backend sau
+}
+
+interface DeckWithStats extends Deck {
+  cardCount: number;
+  cardsDue: number;
+}
+
+interface DashboardStats {
+  cardsDueToday: number;
+  totalCards: number;
+  newCardsToday: number;
+  totalDecks: number;
 }
 
 // Hàm fetch dữ liệu
 const fetchDecks = async (): Promise<Deck[]> => {
   const { data } = await api.get("/decks");
-  // Giả lập dữ liệu bổ sung, sau này sẽ thay bằng dữ liệu thật từ API
-  return data.map((deck: Deck) => ({
-    ...deck,
-    cardCount: Math.floor(Math.random() * 100),
-    lastReviewed: "Hôm qua",
-  }));
+  return data;
+};
+
+const fetchDashboardStats = async (): Promise<DashboardStats> => {
+  const { data } = await api.get("/stats/dashboard");
+  return data;
 };
 
 export default function DashboardClient() {
@@ -68,7 +77,31 @@ export default function DashboardClient() {
     queryFn: fetchDecks,
     enabled: !!accessToken,
   });
-  console.log("🚀 ~ DashboardClient ~ decks:", decks);
+
+  const { data: stats } = useQuery<DashboardStats>({
+    queryKey: ["dashboardStats"],
+    queryFn: fetchDashboardStats,
+    enabled: !!accessToken,
+  });
+
+  // Fetch individual deck stats for card counts
+  const deckStatsQueries = useQuery({
+    queryKey: ["allDeckStats", decks?.map((d) => d._id)],
+    queryFn: async () => {
+      if (!decks) return [];
+      const statsPromises = decks.map((deck) =>
+        api.get(`/stats/deck/${deck._id}`).then((res) => res.data)
+      );
+      return Promise.all(statsPromises);
+    },
+    enabled: !!accessToken && !!decks && decks.length > 0,
+  });
+
+  const decksWithStats: DeckWithStats[] = decks?.map((deck, index) => ({
+    ...deck,
+    cardCount: deckStatsQueries.data?.[index]?.totalCards || 0,
+    cardsDue: deckStatsQueries.data?.[index]?.cardsDue || 0,
+  })) || [];
 
   const createDeckMutation = useMutation({
     mutationFn: (newDeck: { name: string; description: string }) =>
@@ -90,10 +123,14 @@ export default function DashboardClient() {
     }
   };
 
-  if (!accessToken || isLoading) {
+  if (!accessToken) {
+    return null;
+  }
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        Đang tải...
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-current border-t-transparent" />
       </div>
     );
   }
@@ -121,7 +158,9 @@ export default function DashboardClient() {
               <BookCopy className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">25 thẻ</div>
+              <div className="text-2xl font-bold">
+                {stats?.cardsDueToday || 0} thẻ
+              </div>
               <p className="text-xs text-muted-foreground">
                 Sẵn sàng để chinh phục!
               </p>
@@ -135,9 +174,11 @@ export default function DashboardClient() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">10 / 20 thẻ mới</div>
+              <div className="text-2xl font-bold">
+                {stats?.newCardsToday || 0} thẻ mới
+              </div>
               <p className="text-xs text-muted-foreground">
-                Bạn đang làm rất tốt
+                Hôm nay
               </p>
             </CardContent>
           </Card>
@@ -149,9 +190,11 @@ export default function DashboardClient() {
               <BrainCircuit className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+350</div>
+              <div className="text-2xl font-bold">
+                {stats?.totalCards || 0}
+              </div>
               <p className="text-xs text-muted-foreground">
-                Kiến thức là sức mạnh
+                Tổng số từ
               </p>
             </CardContent>
           </Card>
@@ -209,9 +252,9 @@ export default function DashboardClient() {
             </Dialog>
           </div>
 
-          {decks && decks.length > 0 ? (
+          {decksWithStats && decksWithStats.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {decks.map((deck) => (
+              {decksWithStats.map((deck) => (
                 <Card key={deck._id} className="flex flex-col">
                   <CardHeader>
                     <CardTitle>{deck.name}</CardTitle>
@@ -225,8 +268,8 @@ export default function DashboardClient() {
                       <span>{deck.cardCount} thẻ</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <History className="h-4 w-4" />
-                      <span>Ôn tập lần cuối: {deck.lastReviewed}</span>
+                      <Target className="h-4 w-4" />
+                      <span>{deck.cardsDue} cần ôn tập</span>
                     </div>
                   </CardContent>
                   <div className="p-6 pt-2 mt-auto">

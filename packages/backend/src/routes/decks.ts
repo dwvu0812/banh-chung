@@ -6,7 +6,10 @@ import {
   deleteDeck,
   getDecks,
 } from "../controllers/deckController";
-import { createFlashcard } from "../controllers/flashcardController";
+import {
+  createFlashcard,
+  getCardsByDeck,
+} from "../controllers/flashcardController";
 import { protect } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -23,7 +26,7 @@ router
   .put(updateDeck) // Cập nhật deck
   .delete(deleteDeck); // Xóa deck
 
-// Route để tạo card trong một deck cụ thể
-router.route("/:deckId/cards").post(createFlashcard);
+// Route để quản lý cards trong một deck cụ thể
+router.route("/:deckId/cards").get(getCardsByDeck).post(createFlashcard);
 
 export default router;

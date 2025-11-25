@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth";
 import deckRoutes from "./routes/decks";
 import cardRoutes from "./routes/cards";
 import reviewRoutes from "./routes/reviews";
+import statsRoutes from "./routes/stats";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/decks", deckRoutes);
 app.use("/api/cards", cardRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/stats", statsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Backend server is running on http://localhost:${PORT}`);
