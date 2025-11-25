@@ -22,6 +22,7 @@ cd packages/backend
 cat > .env << EOF
 MONGO_URI=mongodb://localhost:27017/flashcard-app
 JWT_SECRET=your-super-secret-jwt-key-change-this-to-something-random
+JWT_REFRESH_SECRET=your-super-secret-jwt-refresh-key-change-this-too
 PORT=5000
 EOF
 

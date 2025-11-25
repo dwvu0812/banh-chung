@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
+import { AuthRequest } from "../middleware/authMiddleware";
 
 export const register = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
@@ -72,5 +73,23 @@ export const refreshToken = async (req: Request, res: Response) => {
     // Nếu refresh token không hợp lệ hoặc hết hạn
     console.error(error);
     return res.status(403).json({ msg: "Invalid refresh token" });
+  }
+};
+
+// @desc    Get current user
+// @route   GET /api/auth/me
+// @access  Private
+export const getCurrentUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await User.findById(req.user?.userId).select("-passwordHash");
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
   }
 };

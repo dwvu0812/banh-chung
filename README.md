@@ -57,6 +57,7 @@ MONGO_URI=mongodb://localhost:27017/flashcard-app
 # MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/flashcard-app
 
 JWT_SECRET=your-super-secret-jwt-key-change-this
+JWT_REFRESH_SECRET=your-super-secret-jwt-refresh-key-change-this
 PORT=5000
 ```
 

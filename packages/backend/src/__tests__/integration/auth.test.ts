@@ -157,4 +157,54 @@ describe("Auth API Integration Tests", () => {
       expect(response.body.msg).toBe("No refresh token provided");
     });
   });
+
+  describe("GET /api/auth/me", () => {
+    let accessToken: string;
+    let userId: string;
+
+    beforeEach(async () => {
+      // Create user and get access token
+      const user = await createTestUser({
+        username: "meuser",
+        email: "me@example.com",
+      });
+      userId = user._id.toString();
+
+      const loginResponse = await request(app).post("/api/auth/login").send({
+        email: "me@example.com",
+        password: "testpass123",
+      });
+
+      accessToken = loginResponse.body.accessToken;
+    });
+
+    it("should get current user with valid token", async () => {
+      const response = await request(app)
+        .get("/api/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .expect(200);
+
+      expect(response.body._id).toBe(userId);
+      expect(response.body.username).toBe("meuser");
+      expect(response.body.email).toBe("me@example.com");
+      expect(response.body.passwordHash).toBeUndefined(); // Should not include password
+    });
+
+    it("should fail without authentication token", async () => {
+      const response = await request(app)
+        .get("/api/auth/me")
+        .expect(401);
+
+      expect(response.body.msg).toBeDefined();
+    });
+
+    it("should fail with invalid token", async () => {
+      const response = await request(app)
+        .get("/api/auth/me")
+        .set("Authorization", "Bearer invalid-token")
+        .expect(401);
+
+      expect(response.body.msg).toBeDefined();
+    });
+  });
 });

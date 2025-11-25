@@ -9,10 +9,12 @@
     "packages/frontend"
   ],
   "scripts": {
-    "start:backend": "npm start --workspace=backend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm run dev --workspace=backend",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev": "npm run dev:backend & npm run dev:frontend"
+    "dev:frontend": "npm run dev --workspace=frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
   },
   "keywords": [],
   "author": "",
