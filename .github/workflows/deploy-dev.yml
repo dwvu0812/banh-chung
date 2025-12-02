@@ -41,7 +41,6 @@ jobs:
     name: Deploy Backend to Railway (Dev)
     needs: test
     runs-on: ubuntu-latest
-    environment: development
     
     steps:
       - name: Checkout code
@@ -66,7 +65,9 @@ jobs:
     name: Deploy Frontend to Vercel (Preview)
     needs: test
     runs-on: ubuntu-latest
-    environment: development
+    
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout code
