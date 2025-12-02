@@ -11,7 +11,11 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm run dev --workspace=backend",
-    "dev:frontend": "npm run dev --workspace=frontend"
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "test:all": "npm test --workspaces",
+    "build:all": "npm run build --workspaces",
+    "lint:backend": "npm run lint --workspace=backend",
+    "lint:frontend": "npm run lint --workspace=frontend"
   },
   "devDependencies": {
     "concurrently": "^7.6.0"

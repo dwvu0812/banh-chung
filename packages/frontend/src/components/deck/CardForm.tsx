@@ -6,6 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 
+interface CardData {
+  word: string;
+  definition: string;
+  pronunciation?: string;
+  examples?: string[];
+}
+
 interface CardFormProps {
   card?: {
     _id?: string;
@@ -14,12 +21,17 @@ interface CardFormProps {
     pronunciation?: string;
     examples?: string[];
   };
-  onSubmit: (cardData: any) => void;
+  onSubmit: (cardData: CardData) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function CardForm({ card, onSubmit, onCancel, isLoading }: CardFormProps) {
+export function CardForm({
+  card,
+  onSubmit,
+  onCancel,
+  isLoading,
+}: CardFormProps) {
   const [word, setWord] = useState(card?.word || "");
   const [definition, setDefinition] = useState(card?.definition || "");
   const [examples, setExamples] = useState<string[]>(card?.examples || [""]);
@@ -122,4 +134,3 @@ export function CardForm({ card, onSubmit, onCancel, isLoading }: CardFormProps)
     </form>
   );
 }
-

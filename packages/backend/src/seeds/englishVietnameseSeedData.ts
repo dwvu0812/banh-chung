@@ -1,9 +1,3 @@
-import bcrypt from "bcryptjs";
-import mongoose from "mongoose";
-import User from "../models/User";
-import Deck from "../models/Deck";
-import Flashcard from "../models/Flashcard";
-
 // Sample users with hashed passwords
 export const sampleUsers = [
   {

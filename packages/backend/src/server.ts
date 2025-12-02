@@ -16,9 +16,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:3000",
+  process.env.FRONTEND_URL_DEV,
+  process.env.FRONTEND_URL_PROD,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: allowedOrigins,
     credentials: true,
   })
 );

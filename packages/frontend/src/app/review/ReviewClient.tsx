@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
 import api from "@/lib/api";
@@ -57,7 +57,7 @@ export default function ReviewClient() {
       api.post(`/reviews/${cardId}`, { quality }),
     onSuccess: () => {
       setReviewedCards((prev) => prev + 1);
-      
+
       // Move to next card
       if (currentIndex < cards.length - 1) {
         setCurrentIndex((prev) => prev + 1);
@@ -73,46 +73,52 @@ export default function ReviewClient() {
     },
   });
 
-  const handleRate = (quality: number) => {
-    if (!isFlipped) {
-      toast.error("Please flip the card first!");
-      return;
-    }
+  const handleRate = useCallback(
+    (quality: number) => {
+      if (!isFlipped) {
+        toast.error("Please flip the card first!");
+        return;
+      }
 
-    const currentCard = cards[currentIndex];
-    submitReviewMutation.mutate({ cardId: currentCard._id, quality });
-  };
+      const currentCard = cards[currentIndex];
+      submitReviewMutation.mutate({ cardId: currentCard._id, quality });
+    },
+    [isFlipped, cards, currentIndex, submitReviewMutation]
+  );
 
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (submitReviewMutation.isPending) return;
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (submitReviewMutation.isPending) return;
 
-    switch (e.key) {
-      case " ":
-        e.preventDefault();
-        setIsFlipped((prev) => !prev);
-        break;
-      case "1":
-        handleRate(0);
-        break;
-      case "2":
-        handleRate(3);
-        break;
-      case "3":
-        handleRate(4);
-        break;
-      case "4":
-        handleRate(5);
-        break;
-      case "Escape":
-        router.push(deckId ? `/decks/${deckId}` : "/dashboard");
-        break;
-    }
-  };
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          setIsFlipped((prev) => !prev);
+          break;
+        case "1":
+          handleRate(0);
+          break;
+        case "2":
+          handleRate(3);
+          break;
+        case "3":
+          handleRate(4);
+          break;
+        case "4":
+          handleRate(5);
+          break;
+        case "Escape":
+          router.push(deckId ? `/decks/${deckId}` : "/dashboard");
+          break;
+      }
+    },
+    [submitReviewMutation.isPending, handleRate, router, deckId]
+  );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isFlipped, currentIndex, cards, submitReviewMutation.isPending]);
+  }, [handleKeyPress]);
 
   if (!accessToken) {
     return null;
@@ -143,7 +149,7 @@ export default function ReviewClient() {
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
             <h1 className="text-3xl font-bold">Review Complete!</h1>
             <p className="text-muted-foreground">
-              You've reviewed {reviewedCards} cards today. Great job!
+              You&apos;ve reviewed {reviewedCards} cards today. Great job!
             </p>
             <Link href={deckId ? `/decks/${deckId}` : "/dashboard"}>
               <Button>Back to {deckId ? "Deck" : "Dashboard"}</Button>
@@ -203,4 +209,3 @@ export default function ReviewClient() {
     </div>
   );
 }
-
