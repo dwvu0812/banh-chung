@@ -11,13 +11,7 @@ import { useAuthStore } from "@/store/authStore";
 
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -76,14 +70,16 @@ export default function DeckDetailClient({ deckId }: { deckId: string }) {
   });
 
   // Fetch cards
-  const { data: cards = [], isLoading: isCardsLoading } = useQuery<FlashCard[]>({
-    queryKey: ["cards", deckId],
-    queryFn: async () => {
-      const { data } = await api.get(`/decks/${deckId}/cards`);
-      return data;
-    },
-    enabled: !!accessToken,
-  });
+  const { data: cards = [], isLoading: isCardsLoading } = useQuery<FlashCard[]>(
+    {
+      queryKey: ["cards", deckId],
+      queryFn: async () => {
+        const { data } = await api.get(`/decks/${deckId}/cards`);
+        return data;
+      },
+      enabled: !!accessToken,
+    }
+  );
 
   // Fetch deck stats
   const { data: stats } = useQuery<DeckStats>({
@@ -97,7 +93,8 @@ export default function DeckDetailClient({ deckId }: { deckId: string }) {
 
   // Create card mutation
   const createCardMutation = useMutation({
-    mutationFn: (newCard: any) => api.post(`/decks/${deckId}/cards`, newCard),
+    mutationFn: (newCard: Omit<FlashCard, "_id">) =>
+      api.post(`/decks/${deckId}/cards`, newCard),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cards", deckId] });
       queryClient.invalidateQueries({ queryKey: ["deckStats", deckId] });
@@ -111,8 +108,13 @@ export default function DeckDetailClient({ deckId }: { deckId: string }) {
 
   // Update card mutation
   const updateCardMutation = useMutation({
-    mutationFn: ({ cardId, data }: { cardId: string; data: any }) =>
-      api.put(`/cards/${cardId}`, data),
+    mutationFn: ({
+      cardId,
+      data,
+    }: {
+      cardId: string;
+      data: Partial<FlashCard>;
+    }) => api.put(`/cards/${cardId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cards", deckId] });
       setIsFormOpen(false);
@@ -137,11 +139,11 @@ export default function DeckDetailClient({ deckId }: { deckId: string }) {
     },
   });
 
-  const handleCreateCard = (cardData: any) => {
+  const handleCreateCard = (cardData: Omit<FlashCard, "_id">) => {
     createCardMutation.mutate(cardData);
   };
 
-  const handleUpdateCard = (cardData: any) => {
+  const handleUpdateCard = (cardData: Partial<FlashCard>) => {
     if (editingCard) {
       updateCardMutation.mutate({ cardId: editingCard._id, data: cardData });
     }
@@ -254,16 +256,17 @@ export default function DeckDetailClient({ deckId }: { deckId: string }) {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats.masteredCards}
-                </div>
+                <div className="text-2xl font-bold">{stats.masteredCards}</div>
                 <p className="text-xs text-muted-foreground">
                   {stats.masteryPercentage.toFixed(0)}% mastery
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="flex flex-col justify-center items-center bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer" onClick={handleStartReview}>
+            <Card
+              className="flex flex-col justify-center items-center bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
+              onClick={handleStartReview}
+            >
               <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                 <Play className="h-8 w-8 mb-2" />
                 <div className="text-lg font-bold">Start Review</div>
@@ -324,4 +327,3 @@ export default function DeckDetailClient({ deckId }: { deckId: string }) {
     </div>
   );
 }
-

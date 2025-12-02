@@ -11,15 +11,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+interface CardData {
+  _id: string;
+  word: string;
+  definition: string;
+  pronunciation?: string;
+  examples?: string[];
+}
+
 interface CardItemProps {
-  card: {
-    _id: string;
-    word: string;
-    definition: string;
-    pronunciation?: string;
-    examples?: string[];
-  };
-  onEdit: (card: any) => void;
+  card: CardData;
+  onEdit: (card: CardData) => void;
   onDelete: (cardId: string) => void;
 }
 
@@ -82,4 +84,3 @@ export function CardItem({ card, onEdit, onDelete }: CardItemProps) {
     </Card>
   );
 }
-
