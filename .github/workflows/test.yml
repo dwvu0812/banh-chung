@@ -11,6 +11,11 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    
     strategy:
       matrix:
         node-version: [20.x]
