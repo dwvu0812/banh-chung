@@ -52,6 +52,7 @@ jobs:
     name: Deploy Backend to Railway (Production)
     needs: test
     runs-on: ubuntu-latest
+    environment: production
     
     steps:
       - name: Checkout code
@@ -79,6 +80,7 @@ jobs:
     name: Deploy Frontend to Vercel (Production)
     needs: test
     runs-on: ubuntu-latest
+    environment: production
     
     permissions:
       contents: write
