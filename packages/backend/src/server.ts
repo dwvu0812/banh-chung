@@ -29,7 +29,7 @@ if (!process.env.MONGO_URI) {
 console.log("Environment check passed:", {
   nodeEnv: process.env.NODE_ENV,
   port: process.env.PORT,
-  mongoUri: process.env.MONGO_URI ? "✓ Set" : "✗ Missing"
+  mongoUri: process.env.MONGO_URI ? "✓ Set" : "✗ Missing",
 });
 
 const app = express();
@@ -63,7 +63,7 @@ const startServer = async () => {
     console.log("Attempting to connect to MongoDB...");
     await mongoose.connect(process.env.MONGO_URI!);
     console.log("✓ MongoDB Connected successfully");
-    
+
     // Listen on 0.0.0.0 to accept external connections (required for Railway)
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`✓ Server is running on port ${PORT}`);
