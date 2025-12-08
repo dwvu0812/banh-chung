@@ -54,7 +54,6 @@ jobs:
         run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID_DEV }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: ./packages/backend
       
       - name: Get deployment URL
         id: railway-url
