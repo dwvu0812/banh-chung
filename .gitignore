@@ -20,6 +20,8 @@ packages/frontend/.env.*.local
 # Production
 /build
 /dist
+packages/backend/dist/*
+/packages/frontend/dist
 
 # Environment variables
 .env
