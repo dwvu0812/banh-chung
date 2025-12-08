@@ -1,5 +1,16 @@
 # Dependencies
-node_modules/
+node_modules
+# Environment files (allow .env.example to be committed)
+packages/backend/.env
+packages/backend/.env.local
+packages/backend/.env.development
+packages/backend/.env.production
+packages/backend/.env.*.local
+packages/frontend/.env
+packages/frontend/.env.local
+packages/frontend/.env.development
+packages/frontend/.env.production
+packages/frontend/.env.*.local
 /.pnp
 .pnp.js
 
