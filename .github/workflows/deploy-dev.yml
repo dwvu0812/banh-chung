@@ -85,15 +85,13 @@ jobs:
         run: npm install -g vercel
       
       - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: ./packages/frontend
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }} --cwd=./packages/frontend
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       
       - name: Build Project
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: ./packages/frontend
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }} --cwd=./packages/frontend
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -101,9 +99,8 @@ jobs:
       - name: Deploy to Vercel Preview
         id: deploy
         run: |
-          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --cwd=./packages/frontend)
           echo "deployment_url=$url" >> $GITHUB_OUTPUT
-        working-directory: ./packages/frontend
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
