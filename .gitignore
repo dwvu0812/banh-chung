@@ -62,3 +62,11 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Logs
+logs/
+*.log
+
+# Temp files
+temp/
+packages/backend/temp/

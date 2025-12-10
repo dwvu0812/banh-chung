@@ -1,6 +1,21 @@
 import { Router } from "express";
-import { register, login, refreshToken, getCurrentUser } from "../controllers/authController";
+import {
+  register,
+  login,
+  refreshToken,
+  getCurrentUser,
+  updateProfile,
+  changePassword,
+} from "../controllers/authController";
 import { protect } from "../middleware/authMiddleware";
+import { validate } from "../middleware/validate";
+import {
+  registerSchema,
+  loginSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+} from "../validators/authValidators";
+import { authLimiter } from "../middleware/security";
 
 const router = Router();
 
@@ -9,9 +24,11 @@ router.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", message: "Auth service is healthy" });
 });
 
-router.post("/register", register); // POST /api/auth/register
-router.post("/login", login); // POST /api/auth/login
-router.post("/refresh", refreshToken); // POST /api/auth/refresh
-router.get("/me", protect, getCurrentUser); // GET /api/auth/me
+router.post("/register", authLimiter, validate(registerSchema), register);
+router.post("/login", authLimiter, validate(loginSchema), login);
+router.post("/refresh", refreshToken);
+router.get("/me", protect, getCurrentUser);
+router.put("/profile", protect, validate(updateProfileSchema), updateProfile);
+router.put("/password", protect, validate(changePasswordSchema), changePassword);
 
 export default router;

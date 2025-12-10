@@ -6,16 +6,23 @@ import {
   generateAudio,
 } from "../controllers/flashcardController";
 import { protect } from "../middleware/authMiddleware";
+import { validate } from "../middleware/validate";
+import {
+  getFlashcardSchema,
+  updateFlashcardSchema,
+  deleteFlashcardSchema,
+  generateAudioSchema,
+} from "../validators/flashcardValidators";
 
 const router = Router();
 router.use(protect);
 
 router
   .route("/:cardId")
-  .get(getFlashcard)
-  .put(updateFlashcard)
-  .delete(deleteFlashcard);
+  .get(validate(getFlashcardSchema), getFlashcard)
+  .put(validate(updateFlashcardSchema), updateFlashcard)
+  .delete(validate(deleteFlashcardSchema), deleteFlashcard);
 
-router.route("/:cardId/audio").post(generateAudio);
+router.route("/:cardId/audio").post(validate(generateAudioSchema), generateAudio);
 
 export default router;

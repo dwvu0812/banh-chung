@@ -21,6 +21,7 @@ const userSchema = new Schema<IUser>(
       trim: true,
       minlength: [3, "Username must be at least 3 characters long"],
       maxlength: [30, "Username cannot exceed 30 characters"],
+      index: true,
     },
     email: {
       type: String,
@@ -32,6 +33,7 @@ const userSchema = new Schema<IUser>(
         /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
         "Please enter a valid email address",
       ],
+      index: true,
     },
     passwordHash: {
       type: String,
