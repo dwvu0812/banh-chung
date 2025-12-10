@@ -13,7 +13,7 @@ describe("Auth API Integration Tests", () => {
       const userData = {
         username: "newuser",
         email: "newuser@example.com",
-        password: "password123",
+        password: "Password123",
       };
 
       const response = await request(app)
@@ -28,7 +28,7 @@ describe("Auth API Integration Tests", () => {
       const userData = {
         username: "testuser",
         email: "duplicate@example.com",
-        password: "password123",
+        password: "Password123",
       };
 
       // Register first user
@@ -38,7 +38,7 @@ describe("Auth API Integration Tests", () => {
       const duplicateUserData = {
         username: "testuser2",
         email: "duplicate@example.com",
-        password: "password123",
+        password: "Password123",
       };
 
       const response = await request(app)
@@ -55,7 +55,7 @@ describe("Auth API Integration Tests", () => {
         // missing email and password
       };
 
-      await request(app).post("/api/auth/register").send(userData).expect(500);
+      await request(app).post("/api/auth/register").send(userData).expect(400);
     });
   });
 
@@ -71,7 +71,7 @@ describe("Auth API Integration Tests", () => {
     it("should login with valid credentials", async () => {
       const loginData = {
         email: "login@example.com",
-        password: "testpass123",
+        password: "Testpass123",
       };
 
       const response = await request(app)
@@ -86,7 +86,7 @@ describe("Auth API Integration Tests", () => {
     it("should fail login with invalid email", async () => {
       const loginData = {
         email: "nonexistent@example.com",
-        password: "testpass123",
+        password: "Testpass123",
       };
 
       const response = await request(app)
@@ -100,7 +100,7 @@ describe("Auth API Integration Tests", () => {
     it("should fail login with invalid password", async () => {
       const loginData = {
         email: "login@example.com",
-        password: "wrongpassword",
+        password: "WrongPassword123",
       };
 
       const response = await request(app)
@@ -124,7 +124,7 @@ describe("Auth API Integration Tests", () => {
 
       const loginResponse = await request(app).post("/api/auth/login").send({
         email: "refresh@example.com",
-        password: "testpass123",
+        password: "Testpass123",
       });
 
       refreshToken = loginResponse.body.refreshToken;
@@ -172,7 +172,7 @@ describe("Auth API Integration Tests", () => {
 
       const loginResponse = await request(app).post("/api/auth/login").send({
         email: "me@example.com",
-        password: "testpass123",
+        password: "Testpass123",
       });
 
       accessToken = loginResponse.body.accessToken;

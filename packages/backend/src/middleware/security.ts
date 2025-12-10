@@ -5,10 +5,11 @@ import mongoSanitize from "express-mongo-sanitize";
 // Rate limiting for authentication endpoints
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 requests per windowMs
+  max: process.env.NODE_ENV === "test" ? 1000 : 5, // Disable rate limiting in tests
   message: "Too many login attempts, please try again after 15 minutes",
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === "test", // Skip rate limiting in test environment
 });
 
 // Rate limiting for general API endpoints
@@ -18,6 +19,7 @@ export const apiLimiter = rateLimit({
   message: "Too many requests, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === "test", // Skip rate limiting in test environment
 });
 
 // Rate limiting for creating resources
@@ -27,6 +29,7 @@ export const createLimiter = rateLimit({
   message: "Too many resources created, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === "test", // Skip rate limiting in test environment
 });
 
 // Security headers configuration

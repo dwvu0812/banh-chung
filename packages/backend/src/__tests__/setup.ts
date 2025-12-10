@@ -3,6 +3,11 @@ import mongoose from "mongoose";
 
 let mongoServer: MongoMemoryServer;
 
+// Setup environment variables for tests
+process.env.JWT_SECRET = "test-jwt-secret-key-for-testing-only";
+process.env.JWT_REFRESH_SECRET = "test-refresh-token-secret-for-testing-only";
+process.env.NODE_ENV = "test";
+
 // Setup before all tests
 beforeAll(async () => {
   // Create in-memory MongoDB instance
