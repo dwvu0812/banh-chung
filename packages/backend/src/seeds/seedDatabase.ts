@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
-import User from "../models/User";
+import User, { UserRole } from "../models/User";
 import Deck from "../models/Deck";
 import Flashcard from "../models/Flashcard";
+import Collocation from "../models/Collocation";
 import { sampleUsers, sampleDecks, sampleFlashcards } from "./englishVietnameseSeedData";
+import { collocationDecks, sampleCollocations } from "./collocationSeedData";
+import { generateTTSUrl } from "../lib/tts";
 
 dotenv.config();
 
@@ -16,6 +19,7 @@ const seedDatabase = async () => {
 
     // Clear existing data
     console.log("Clearing existing data...");
+    await Collocation.deleteMany({});
     await Flashcard.deleteMany({});
     await Deck.deleteMany({});
     await User.deleteMany({});
@@ -34,12 +38,30 @@ const seedDatabase = async () => {
         email: userData.email,
         passwordHash,
         learningSettings: userData.learningSettings,
+        role: UserRole.USER,
       });
       
       const savedUser = await user.save();
       createdUsers.push(savedUser);
       console.log(`Created user: ${userData.username}`);
     }
+
+    // Create a super admin user
+    const salt = await bcrypt.genSalt(10);
+    const adminPasswordHash = await bcrypt.hash("admin123", salt);
+    const superAdmin = new User({
+      username: "superadmin",
+      email: "admin@banh-chung.com",
+      passwordHash: adminPasswordHash,
+      role: UserRole.SUPER_ADMIN,
+      learningSettings: {
+        dailyTarget: 50,
+        voiceSpeed: 1.0,
+      },
+    });
+    const savedAdmin = await superAdmin.save();
+    createdUsers.push(savedAdmin);
+    console.log("Created super admin user");
 
     // Create decks
     console.log("Creating decks...");
@@ -75,21 +97,74 @@ const seedDatabase = async () => {
       console.log(`Created flashcard: ${cardData.word}`);
     }
 
+    // Create collocation decks
+    console.log("Creating collocation decks...");
+    const createdCollocationDecks = [];
+    
+    for (const deckData of collocationDecks) {
+      const deck = new Deck({
+        name: deckData.name,
+        description: deckData.description,
+        user: savedAdmin._id, // Assign to super admin
+      });
+      
+      const savedDeck = await deck.save();
+      createdCollocationDecks.push(savedDeck);
+      console.log(`Created collocation deck: ${deckData.name}`);
+    }
+
+    // Create collocations
+    console.log("Creating collocations...");
+    
+    for (const collocationData of sampleCollocations) {
+      const audioUrl = generateTTSUrl(collocationData.phrase, "en-US");
+      
+      const collocation = new Collocation({
+        phrase: collocationData.phrase,
+        meaning: collocationData.meaning,
+        components: collocationData.components,
+        examples: collocationData.examples,
+        pronunciation: audioUrl,
+        tags: collocationData.tags,
+        deck: createdCollocationDecks[collocationData.deckIndex]._id,
+        user: savedAdmin._id, // Assign to super admin
+        difficulty: collocationData.difficulty,
+        srsData: {
+          interval: 1,
+          easeFactor: 2.5,
+          repetitions: 0,
+          nextReview: new Date(),
+        },
+      });
+      
+      await collocation.save();
+      console.log(`Created collocation: ${collocationData.phrase}`);
+    }
+
     console.log("\n=== SEED DATA SUMMARY ===");
-    console.log(`✅ Created ${createdUsers.length} users`);
-    console.log(`✅ Created ${createdDecks.length} decks`);
+    console.log(`✅ Created ${createdUsers.length} users (including super admin)`);
+    console.log(`✅ Created ${createdDecks.length} flashcard decks`);
     console.log(`✅ Created ${sampleFlashcards.length} flashcards`);
+    console.log(`✅ Created ${createdCollocationDecks.length} collocation decks`);
+    console.log(`✅ Created ${sampleCollocations.length} collocations`);
     
     console.log("\n=== USER ACCOUNTS ===");
     sampleUsers.forEach((user, index) => {
       console.log(`👤 ${user.username} (${user.email}) - Password: ${user.password}`);
     });
+    console.log(`👑 superadmin (admin@banh-chung.com) - Password: admin123 [SUPER ADMIN]`);
 
-    console.log("\n=== DECK DISTRIBUTION ===");
+    console.log("\n=== FLASHCARD DECK DISTRIBUTION ===");
     createdDecks.forEach((deck, index) => {
       const owner = createdUsers.find(user => user._id.equals(deck.user));
       const cardCount = sampleFlashcards.filter(card => card.deckIndex === index).length;
       console.log(`📚 "${deck.name}" - Owner: ${owner?.username} - Cards: ${cardCount}`);
+    });
+
+    console.log("\n=== COLLOCATION DECK DISTRIBUTION ===");
+    createdCollocationDecks.forEach((deck, index) => {
+      const collocationCount = sampleCollocations.filter(col => col.deckIndex === index).length;
+      console.log(`📖 "${deck.name}" - Owner: superadmin - Collocations: ${collocationCount}`);
     });
 
     console.log("\n🎉 Database seeded successfully!");

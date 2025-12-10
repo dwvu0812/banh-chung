@@ -10,6 +10,7 @@ import {
   createFlashcard,
   getCardsByDeck,
 } from "../controllers/flashcardController";
+import { getCollocationsByDeck } from "../controllers/collocationController";
 import { protect } from "../middleware/authMiddleware";
 import { validate } from "../middleware/validate";
 import { createDeckSchema, updateDeckSchema, getDeckSchema, deleteDeckSchema } from "../validators/deckValidators";
@@ -35,5 +36,8 @@ router
   .route("/:deckId/cards")
   .get(getCardsByDeck)
   .post(createLimiter, validate(createFlashcardSchema), createFlashcard);
+
+// Routes for managing collocations within a deck
+router.route("/:deckId/collocations").get(getCollocationsByDeck);
 
 export default router;

@@ -19,6 +19,8 @@ interface AuthState {
   setUser: (user: User | null) => void;
   logout: () => void;
   clearTokens: () => void;
+  isSuperAdmin: () => boolean;
+  isAdmin: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -58,6 +60,16 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: null,
           isAuthenticated: false,
         }),
+
+      isSuperAdmin: () => {
+        const { user } = get();
+        return user?.role === "super_admin";
+      },
+
+      isAdmin: () => {
+        const { user } = get();
+        return user?.role === "admin" || user?.role === "super_admin";
+      },
     }),
     {
       name: "auth-storage", // Key name in localStorage

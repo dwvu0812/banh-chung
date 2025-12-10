@@ -28,10 +28,12 @@ import { Label } from "@/components/ui/label";
 import {
   ArrowRight,
   BookCopy,
+  BookOpen,
   BrainCircuit,
   Layers,
   PlusCircle,
   Target,
+  Trophy,
 } from "lucide-react";
 
 // Định nghĩa kiểu dữ liệu cho Deck
@@ -51,6 +53,14 @@ interface DashboardStats {
   totalCards: number;
   newCardsToday: number;
   totalDecks: number;
+  collocation: {
+    total: number;
+    dueToday: number;
+  };
+  quiz: {
+    totalTaken: number;
+    averageScore: number;
+  };
 }
 
 // Hàm fetch dữ liệu
@@ -205,6 +215,67 @@ export default function DashboardClient() {
                 <p className="text-xs text-primary-foreground/80">
                   Thử thách trí nhớ của bạn
                 </p>
+              </CardContent>
+            </Link>
+          </Card>
+        </div>
+
+        {/* === Collocation & Quiz Stats === */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/collocations">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  English Collocations
+                </CardTitle>
+                <BookOpen className="h-5 w-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Available:</span>
+                    <span className="text-2xl font-bold">{stats?.collocation?.total || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Due Today:</span>
+                    <span className="text-lg font-semibold text-primary">
+                      {stats?.collocation?.dueToday || 0}
+                    </span>
+                  </div>
+                  <Button variant="outline" className="w-full mt-4">
+                    Browse Collocations
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/quiz">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold">
+                  Quiz Performance
+                </CardTitle>
+                <Trophy className="h-5 w-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Quizzes Taken:</span>
+                    <span className="text-2xl font-bold">{stats?.quiz?.totalTaken || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Average Score:</span>
+                    <span className="text-lg font-semibold text-primary">
+                      {stats?.quiz?.averageScore || 0}%
+                    </span>
+                  </div>
+                  <Button variant="outline" className="w-full mt-4">
+                    Take a Quiz
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
               </CardContent>
             </Link>
           </Card>

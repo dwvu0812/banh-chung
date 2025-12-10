@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 export interface AuthRequest extends Request {
   user?: {
     userId: string;
+    role?: string;
   };
 }
 
@@ -25,10 +26,11 @@ export const protect = (
       // Xác thực token
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
         userId: string;
+        role?: string;
       };
 
       // Gắn thông tin user đã giải mã vào request
-      req.user = { userId: decoded.userId };
+      req.user = { userId: decoded.userId, role: decoded.role };
       next();
     } catch (error) {
       console.error(error);

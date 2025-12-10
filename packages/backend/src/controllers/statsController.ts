@@ -2,6 +2,8 @@ import { Response } from "express";
 import Flashcard from "../models/Flashcard";
 import Deck from "../models/Deck";
 import StudySession from "../models/StudySession";
+import Collocation from "../models/Collocation";
+import QuizResult from "../models/QuizResult";
 import { AuthRequest } from "../middleware/authMiddleware";
 
 // @desc    Lấy thống kê tổng quan cho dashboard
@@ -34,11 +36,36 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
     // Tổng số decks
     const totalDecks = await Deck.countDocuments({ user: userId });
 
+    // Collocation statistics
+    const totalCollocations = await Collocation.countDocuments();
+    const collocationsDueToday = await Collocation.countDocuments({
+      "srsData.nextReview": { $lte: today },
+    });
+
+    // Quiz statistics
+    const totalQuizzesTaken = await QuizResult.countDocuments({ user: userId });
+    const recentQuizResults = await QuizResult.find({ user: userId })
+      .sort({ completedAt: -1 })
+      .limit(5)
+      .select("score");
+    
+    const averageScore = recentQuizResults.length > 0
+      ? Math.round(recentQuizResults.reduce((sum, r) => sum + r.score, 0) / recentQuizResults.length)
+      : 0;
+
     res.json({
       cardsDueToday,
       totalCards,
       newCardsToday,
       totalDecks,
+      collocation: {
+        total: totalCollocations,
+        dueToday: collocationsDueToday,
+      },
+      quiz: {
+        totalTaken: totalQuizzesTaken,
+        averageScore,
+      },
     });
   } catch (error) {
     console.error(error);

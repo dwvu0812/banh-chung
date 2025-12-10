@@ -7,7 +7,11 @@ import path from "path";
 import swaggerUi from "swagger-ui-express";
 
 // Import middleware
-import { securityHeaders, sanitizeData, apiLimiter } from "./middleware/security";
+import {
+  securityHeaders,
+  sanitizeData,
+  apiLimiter,
+} from "./middleware/security";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 import logger from "./utils/logger";
 import { responseTimeLogger } from "./utils/performance";
@@ -21,6 +25,8 @@ import reviewRoutes from "./routes/reviews";
 import statsRoutes from "./routes/stats";
 import searchRoutes from "./routes/search";
 import bulkRoutes from "./routes/bulk";
+import collocationRoutes from "./routes/collocations";
+import quizRoutes from "./routes/quiz";
 
 // Load environment variables (Railway provides them directly in production)
 if (process.env.NODE_ENV !== "production") {
@@ -92,6 +98,8 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/bulk", bulkRoutes);
+app.use("/api/collocations", collocationRoutes);
+app.use("/api/quizzes", quizRoutes);
 
 // Error handling middleware (must be after routes)
 app.use(notFound);

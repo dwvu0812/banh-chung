@@ -8,7 +8,6 @@ alwaysApply: true
 
 - Keep file size as small as possible (less than 250 lines)
 - Do not over-implement, code step by step for easy review
-- Always call interactive feedback MCP to optimize request calls
 - When creating new features, always write tests first (TDD approach)
 
 # TypeScript Best Practices

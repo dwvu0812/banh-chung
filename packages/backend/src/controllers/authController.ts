@@ -15,7 +15,15 @@ export const register = async (req: Request, res: Response) => {
     const passwordHash = await bcrypt.hash(password, salt);
     user = new User({ username, email, passwordHash });
     await user.save();
-    res.status(201).json({ msg: "User registered successfully" });
+    res.status(201).json({ 
+      msg: "User registered successfully",
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");
@@ -33,14 +41,23 @@ export const login = async (req: Request, res: Response) => {
     if (!isMatch) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
-    const payload = { userId: user.id };
+    const payload = { userId: user.id, role: user.role };
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
       expiresIn: "15m",
     }); //
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, {
       expiresIn: "7d",
     }); //
-    res.json({ accessToken, refreshToken });
+    res.json({ 
+      accessToken, 
+      refreshToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");
@@ -61,9 +78,9 @@ export const refreshToken = async (req: Request, res: Response) => {
     const decoded = jwt.verify(
       refreshToken,
       process.env.JWT_REFRESH_SECRET!
-    ) as { userId: string };
+    ) as { userId: string; role: string };
 
-    const payload = { userId: decoded.userId };
+    const payload = { userId: decoded.userId, role: decoded.role };
     const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
       expiresIn: "15m",
     });
