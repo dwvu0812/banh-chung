@@ -2,6 +2,7 @@ import { Response } from "express";
 import Flashcard from "../models/Flashcard";
 import Deck from "../models/Deck";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { validatePagination, getPaginationMeta } from "../utils/pagination";
 
 // @desc    Search flashcards with advanced filtering
 // @route   GET /api/search/cards
@@ -57,10 +58,8 @@ export const searchCards = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Pagination
-    const pageNum = parseInt(page as string, 10);
-    const limitNum = parseInt(limit as string, 10);
-    const skip = (pageNum - 1) * limitNum;
+    // Pagination with validation
+    const pagination = validatePagination(page as string, limit as string);
 
     // Sorting
     const sortOptions: any = {};
@@ -75,8 +74,8 @@ export const searchCards = async (req: AuthRequest, res: Response) => {
     // Execute query
     const cards = await Flashcard.find(query)
       .sort(sortOptions)
-      .skip(skip)
-      .limit(limitNum)
+      .skip(pagination.skip)
+      .limit(pagination.limit)
       .populate("deck", "name");
 
     const total = await Flashcard.countDocuments(query);
@@ -84,10 +83,8 @@ export const searchCards = async (req: AuthRequest, res: Response) => {
     res.json({
       cards,
       pagination: {
-        current: pageNum,
-        total: Math.ceil(total / limitNum),
+        ...getPaginationMeta(total, pagination.page, pagination.limit),
         count: cards.length,
-        totalItems: total,
       },
     });
   } catch (error) {
@@ -125,10 +122,8 @@ export const searchDecks = async (req: AuthRequest, res: Response) => {
       query.$text = { $search: q };
     }
 
-    // Pagination
-    const pageNum = parseInt(page as string, 10);
-    const limitNum = parseInt(limit as string, 10);
-    const skip = (pageNum - 1) * limitNum;
+    // Pagination with validation
+    const pagination = validatePagination(page as string, limit as string);
 
     // Sorting
     const sortOptions: any = {};
@@ -141,8 +136,8 @@ export const searchDecks = async (req: AuthRequest, res: Response) => {
     // Execute query
     const decks = await Deck.find(query)
       .sort(sortOptions)
-      .skip(skip)
-      .limit(limitNum)
+      .skip(pagination.skip)
+      .limit(pagination.limit)
       .populate("user", "username");
 
     const total = await Deck.countDocuments(query);
@@ -150,10 +145,8 @@ export const searchDecks = async (req: AuthRequest, res: Response) => {
     res.json({
       decks,
       pagination: {
-        current: pageNum,
-        total: Math.ceil(total / limitNum),
+        ...getPaginationMeta(total, pagination.page, pagination.limit),
         count: decks.length,
-        totalItems: total,
       },
     });
   } catch (error) {
@@ -176,4 +169,3 @@ export const getAllTags = async (req: AuthRequest, res: Response) => {
     res.status(500).send("Server Error");
   }
 };
-

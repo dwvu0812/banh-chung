@@ -26,7 +26,9 @@ export const bulkImportCards = async (req: AuthRequest, res: Response) => {
     }
 
     if (cards.length > 500) {
-      return res.status(400).json({ msg: "Cannot import more than 500 cards at once" });
+      return res
+        .status(400)
+        .json({ msg: "Cannot import more than 500 cards at once" });
     }
 
     // Prepare flashcards for bulk insert
@@ -113,7 +115,10 @@ export const bulkExportCardsCSV = async (req: AuthRequest, res: Response) => {
     );
 
     // Create CSV file
-    const fileName = `${deck.name.replace(/[^a-z0-9]/gi, "_")}_${Date.now()}.csv`;
+    const fileName = `${deck.name.replace(
+      /[^a-z0-9]/gi,
+      "_"
+    )}_${Date.now()}.csv`;
     const filePath = path.join(__dirname, "../../temp", fileName);
 
     // Ensure temp directory exists
@@ -143,16 +148,42 @@ export const bulkExportCardsCSV = async (req: AuthRequest, res: Response) => {
 
     await csvWriter.writeRecords(records);
 
-    // Send file
-    res.download(filePath, fileName, (err) => {
-      // Clean up file after sending
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+    // Verify file was created successfully before attempting download
+    if (!fs.existsSync(filePath)) {
+      return res.status(500).json({
+        msg: "Failed to generate CSV file",
+      });
+    }
+
+    // Setup cleanup on response finish/close events
+    const cleanupFile = () => {
+      try {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (cleanupError) {
+        console.error("Error deleting temporary file:", cleanupError);
       }
-      if (err) {
-        console.error("Error sending file:", err);
-      }
+    };
+
+    // Cleanup file after response completes (success or error)
+    res.on("finish", cleanupFile);
+    res.on("close", cleanupFile);
+
+    // Set headers before sending
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+    // Stream file to client with error handling
+    const fileStream = fs.createReadStream(filePath);
+
+    fileStream.on("error", (streamError) => {
+      console.error("Error streaming file:", streamError);
+      // Can't send error response after headers sent, just cleanup
+      cleanupFile();
     });
+
+    fileStream.pipe(res);
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
@@ -179,7 +210,11 @@ export const bulkUpdateTags = async (req: AuthRequest, res: Response) => {
       };
     }
 
-    if (tagsToRemove && Array.isArray(tagsToRemove) && tagsToRemove.length > 0) {
+    if (
+      tagsToRemove &&
+      Array.isArray(tagsToRemove) &&
+      tagsToRemove.length > 0
+    ) {
       updateOperation.$pull = {
         tags: { $in: tagsToRemove.map((t: string) => t.trim().toLowerCase()) },
       };
@@ -230,4 +265,3 @@ export const bulkDeleteCards = async (req: AuthRequest, res: Response) => {
     res.status(500).send("Server Error");
   }
 };
-
