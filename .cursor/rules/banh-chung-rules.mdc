@@ -1,16 +1,18 @@
 ---
 description: Banh Chung Project - Node.js, React, Next.js, TypeScript Best Practices
-globs: 
+globs:
 alwaysApply: true
 ---
 
 # General Principles
+
 - Keep file size as small as possible (less than 250 lines)
 - Do not over-implement, code step by step for easy review
 - Always call interactive feedback MCP to optimize request calls
 - When creating new features, always write tests first (TDD approach)
 
 # TypeScript Best Practices
+
 - Use strict TypeScript configuration (`strict: true`)
 - Always define explicit return types for functions
 - Use interfaces for object shapes, types for unions/intersections
@@ -21,6 +23,7 @@ alwaysApply: true
 - Define types in separate `types` or `interfaces` files when shared
 
 # Node.js/Express Backend Best Practices
+
 - Follow MVC pattern: separate routes, controllers, models, middleware
 - Always use async/await instead of callbacks
 - Handle all errors with try-catch blocks
@@ -36,6 +39,7 @@ alwaysApply: true
 - Use transactions for multi-document operations
 
 # React/Next.js Frontend Best Practices
+
 - Use functional components with hooks (no class components)
 - Follow Next.js App Router conventions (app directory structure)
 - Use Server Components by default, Client Components only when needed
@@ -54,6 +58,7 @@ alwaysApply: true
 - Use TypeScript props interfaces for all components
 
 # Code Organization
+
 - One component/function per file (except small helper components)
 - Group related files in feature-based folders
 - Use barrel exports (index.ts) for cleaner imports
@@ -65,6 +70,7 @@ alwaysApply: true
 - Keep folder structure flat - avoid deep nesting
 
 # Testing Best Practices
+
 - Write tests before implementation (TDD)
 - Follow AAA pattern: Arrange, Act, Assert
 - Use descriptive test names that explain the behavior
@@ -76,6 +82,7 @@ alwaysApply: true
 - Keep tests isolated and independent
 
 # State Management
+
 - Use React Context for global UI state
 - Use Zustand/Redux for complex application state
 - Keep server state separate with React Query/SWR
@@ -83,6 +90,7 @@ alwaysApply: true
 - Minimize state - keep it as close to where it's used as possible
 
 # API Design
+
 - Follow RESTful conventions
 - Use consistent naming (plural nouns for resources)
 - Version APIs when making breaking changes
@@ -93,6 +101,7 @@ alwaysApply: true
 - Document APIs with clear descriptions
 
 # Security Best Practices
+
 - Validate all user input
 - Sanitize data before database operations
 - Use parameterized queries to prevent SQL/NoSQL injection
@@ -106,6 +115,7 @@ alwaysApply: true
 - Implement CSRF protection for state-changing operations
 
 # Performance Optimization
+
 - Use React.memo for expensive components
 - Implement code splitting with dynamic imports
 - Optimize images (use Next.js Image component)
@@ -117,6 +127,7 @@ alwaysApply: true
 - Use connection pooling for databases
 
 # Error Handling
+
 - Always catch and handle errors appropriately
 - Provide meaningful error messages to users
 - Log errors with stack traces for debugging
@@ -126,6 +137,7 @@ alwaysApply: true
 - Implement proper fallback UI for errors
 
 # Code Quality
+
 - Use ESLint and Prettier for consistent formatting
 - Write self-documenting code with clear variable names
 - Add comments only when code cannot be self-explanatory
@@ -136,6 +148,7 @@ alwaysApply: true
 - Avoid magic numbers - use named constants
 
 # Git Workflow
+
 - Write clear, descriptive commit messages
 - Use conventional commits (feat:, fix:, docs:, etc.)
 - Keep commits small and focused
@@ -145,6 +158,7 @@ alwaysApply: true
 - Review your own code before requesting review
 
 # Environment & Configuration
+
 - Use .env files for environment variables
 - Never commit .env files to version control
 - Provide .env.example with dummy values
@@ -153,6 +167,7 @@ alwaysApply: true
 - Validate environment variables on startup
 
 # Dependencies
+
 - Keep dependencies up to date
 - Audit dependencies regularly for vulnerabilities
 - Use exact versions in package-lock.json

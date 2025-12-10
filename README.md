@@ -17,7 +17,8 @@ A modern, full-stack flashcard application built with Next.js, Express, and Mong
 ## 📋 Tech Stack
 
 ### Frontend
-- **Next.js 15** - React framework with App Router
+
+- **Next.js 16** - React framework with App Router
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Utility-first styling
 - **shadcn/ui** - Beautiful UI components
@@ -27,6 +28,7 @@ A modern, full-stack flashcard application built with Next.js, Express, and Mong
 - **Jest & React Testing Library** - Testing
 
 ### Backend
+
 - **Express** - Node.js web framework
 - **TypeScript** - Type safety
 - **MongoDB & Mongoose** - Database
@@ -37,11 +39,13 @@ A modern, full-stack flashcard application built with Next.js, Express, and Mong
 ## 🛠️ Installation
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - MongoDB (local or MongoDB Atlas)
 - npm or yarn
 
 ### Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd banh-chung
@@ -51,6 +55,7 @@ npm install
 ### Environment Variables
 
 #### Backend (.env in `packages/backend/`)
+
 ```env
 MONGO_URI=mongodb://localhost:27017/flashcard-app
 # OR use MongoDB Atlas:
@@ -62,6 +67,7 @@ PORT=5000
 ```
 
 #### Frontend (.env.local in `packages/frontend/`)
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
@@ -86,31 +92,39 @@ npm install
 ### Development Mode
 
 #### 1. Start Backend
+
 ```bash
 cd packages/backend
 npm run dev
 ```
+
 Backend will run on http://localhost:5000
 
 #### 2. Start Frontend
+
 ```bash
 cd packages/frontend
 npm run dev
 ```
+
 Frontend will run on http://localhost:3000
 
 ### Seed Database (Optional)
+
 ```bash
 cd packages/backend
 npm run seed
 ```
+
 This creates sample users, decks, and flashcards.
 
 **Default test account:**
+
 - Email: `nguyenvana@example.com`
 - Password: `password123`
 
 ### Verify Seeded Data
+
 ```bash
 cd packages/backend
 npm run verify-seed
@@ -119,6 +133,7 @@ npm run verify-seed
 ## 🧪 Running Tests
 
 ### Backend Tests
+
 ```bash
 cd packages/backend
 npm test                 # Run all tests
@@ -127,6 +142,7 @@ npm run test:coverage   # With coverage
 ```
 
 ### Frontend Tests
+
 ```bash
 cd packages/frontend
 npm test                # Run all tests
@@ -168,11 +184,13 @@ banh-chung/
 ## 🔑 API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 - `GET /api/auth/me` - Get current user
 
 ### Decks
+
 - `GET /api/decks` - Get all user's decks
 - `GET /api/decks/:id` - Get single deck
 - `POST /api/decks` - Create deck
@@ -180,6 +198,7 @@ banh-chung/
 - `DELETE /api/decks/:id` - Delete deck
 
 ### Flashcards
+
 - `GET /api/decks/:deckId/cards` - Get cards in deck
 - `POST /api/decks/:deckId/cards` - Create card
 - `GET /api/cards/:cardId` - Get single card
@@ -188,10 +207,12 @@ banh-chung/
 - `POST /api/cards/:cardId/audio` - Generate audio
 
 ### Reviews
+
 - `GET /api/reviews` - Get cards due for review
 - `POST /api/reviews/:cardId` - Submit review
 
 ### Statistics
+
 - `GET /api/stats/dashboard` - Dashboard statistics
 - `GET /api/stats/deck/:deckId` - Deck statistics
 
@@ -207,18 +228,22 @@ banh-chung/
 ## 🎨 Key Features Explained
 
 ### Spaced Repetition System (SRS)
+
 Uses the SM-2 algorithm to optimize learning intervals:
+
 - **Again (0)**: Review in < 1 minute
 - **Hard (3)**: Review in 1 day
-- **Good (4)**: Review in 2-3 days  
+- **Good (4)**: Review in 2-3 days
 - **Easy (5)**: Review in 4+ days
 
 ### Audio Pronunciation
+
 - Auto-generates pronunciation URLs using Google TTS
 - Supports multiple languages
 - Click speaker icon or use keyboard shortcut to play
 
 ### Statistics
+
 - Cards due today
 - New cards added
 - Total vocabulary learned
@@ -265,23 +290,27 @@ Feature Branch → PR → Tests → Merge to dev → Auto-deploy to Staging
 
 ### Environments
 
-| Environment | Branch | URL Type | Approval Required |
-|-------------|--------|----------|-------------------|
-| Local | any | localhost | No |
-| Staging | dev | Railway Dev + Vercel Preview | No |
-| Production | main | Railway Prod + Vercel Production | Yes |
+| Environment | Branch | URL Type                         | Approval Required |
+| ----------- | ------ | -------------------------------- | ----------------- |
+| Local       | any    | localhost                        | No                |
+| Staging     | dev    | Railway Dev + Vercel Preview     | No                |
+| Production  | main   | Railway Prod + Vercel Production | Yes               |
 
 ## 🧪 Testing Guide
 
 ### Backend Testing
+
 Tests include:
+
 - Controller unit tests (auth, decks, cards, reviews, stats)
 - SRS algorithm tests
 - TTS utility tests
 - Integration tests
 
 ### Frontend Testing
+
 Tests include:
+
 - Component rendering tests
 - User interaction tests
 - Store/state management tests
@@ -308,4 +337,3 @@ Your Name / Team Name
 - shadcn/ui for beautiful components
 - Next.js team for amazing framework
 - MongoDB team for excellent database
-
