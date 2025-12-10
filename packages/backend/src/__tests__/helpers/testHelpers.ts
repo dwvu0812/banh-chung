@@ -8,7 +8,7 @@ import Flashcard from "../../models/Flashcard";
 // Test user factory
 export const createTestUser = async (overrides: any = {}) => {
   const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash("testpass123", salt);
+  const passwordHash = await bcrypt.hash("Testpass123", salt);
 
   const userData = {
     username: `testuser_${Date.now()}`,

@@ -11,22 +11,29 @@ import {
   getCardsByDeck,
 } from "../controllers/flashcardController";
 import { protect } from "../middleware/authMiddleware";
+import { validate } from "../middleware/validate";
+import { createDeckSchema, updateDeckSchema, getDeckSchema, deleteDeckSchema } from "../validators/deckValidators";
+import { createFlashcardSchema } from "../validators/flashcardValidators";
+import { createLimiter } from "../middleware/security";
 
 const router = Router();
-router.use(protect); // Áp dụng bảo vệ cho tất cả
+router.use(protect);
 
 router
   .route("/")
-  .get(getDecks) // Lấy tất cả decks của user
-  .post(createDeck);
+  .get(getDecks)
+  .post(createLimiter, validate(createDeckSchema), createDeck);
 
 router
   .route("/:id")
-  .get(getDeck)
-  .put(updateDeck) // Cập nhật deck
-  .delete(deleteDeck); // Xóa deck
+  .get(validate(getDeckSchema), getDeck)
+  .put(validate(updateDeckSchema), updateDeck)
+  .delete(validate(deleteDeckSchema), deleteDeck);
 
-// Route để quản lý cards trong một deck cụ thể
-router.route("/:deckId/cards").get(getCardsByDeck).post(createFlashcard);
+// Routes for managing cards within a deck
+router
+  .route("/:deckId/cards")
+  .get(getCardsByDeck)
+  .post(createLimiter, validate(createFlashcardSchema), createFlashcard);
 
 export default router;
