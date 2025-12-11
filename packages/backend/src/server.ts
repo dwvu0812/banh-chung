@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import compression from "compression";
 import fs from "fs";
 import path from "path";
 import swaggerUi from "swagger-ui-express";
@@ -13,6 +14,7 @@ import {
   apiLimiter,
 } from "./middleware/security";
 import { errorHandler, notFound } from "./middleware/errorHandler";
+import { performanceMiddleware, responseOptimization, queryOptimization } from "./middleware/performance";
 import logger from "./utils/logger";
 import { responseTimeLogger } from "./utils/performance";
 import swaggerSpec from "./utils/swagger";
@@ -27,6 +29,8 @@ import searchRoutes from "./routes/search";
 import bulkRoutes from "./routes/bulk";
 import collocationRoutes from "./routes/collocations";
 import quizRoutes from "./routes/quiz";
+import crawlerRoutes from "./routes/crawler";
+import performanceRoutes from "./routes/performance";
 
 // Load environment variables (Railway provides them directly in production)
 if (process.env.NODE_ENV !== "production") {
@@ -61,6 +65,21 @@ if (!fs.existsSync(logsDir)) {
 
 // Performance monitoring
 app.use(responseTimeLogger);
+app.use(performanceMiddleware);
+app.use(responseOptimization);
+app.use(queryOptimization);
+
+// Response compression for better performance
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6, // Good balance between compression ratio and speed
+  threshold: 1024 // Only compress responses larger than 1KB
+}));
 
 // Security middleware
 app.use(securityHeaders);
@@ -100,6 +119,8 @@ app.use("/api/search", searchRoutes);
 app.use("/api/bulk", bulkRoutes);
 app.use("/api/collocations", collocationRoutes);
 app.use("/api/quizzes", quizRoutes);
+app.use("/api/crawler", crawlerRoutes);
+app.use("/api/performance", performanceRoutes);
 
 // Error handling middleware (must be after routes)
 app.use(notFound);
@@ -111,6 +132,17 @@ const startServer = async () => {
     logger.info("Attempting to connect to MongoDB...");
     await mongoose.connect(process.env.MONGO_URI!);
     logger.info("✓ MongoDB Connected successfully");
+
+    // Initialize crawler job
+    try {
+      const crawlerJob = (await import("./jobs/collocationCrawler")).default;
+      await crawlerJob.initialize();
+      crawlerJob.startWeeklyJob();
+      logger.info("✓ Collocation crawler job initialized and scheduled");
+    } catch (crawlerError) {
+      logger.warn("⚠ Failed to initialize crawler job:", crawlerError);
+      logger.warn("Crawler functionality will be limited");
+    }
 
     // Listen on 0.0.0.0 to accept external connections (required for Railway)
     app.listen(PORT, "0.0.0.0", () => {

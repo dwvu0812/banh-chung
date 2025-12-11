@@ -4,6 +4,8 @@ import Deck from "../models/Deck";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { generateTTSUrl } from "../lib/tts";
 import { getPaginationParams } from "../utils/pagination";
+import { createCursorPagination, CursorPaginationParams } from "../utils/cursorPagination";
+import cache from "../utils/cache";
 
 // @desc    Create a new collocation (super_admin only)
 // @route   POST /api/collocations
@@ -35,6 +37,11 @@ export const createCollocation = async (req: AuthRequest, res: Response): Promis
     });
 
     await collocation.save();
+    
+    // Invalidate relevant caches
+    await cache.invalidateCollocationCache('*');
+    await cache.invalidateCollocationCache(`deck:${deckId}:*`);
+    
     res.status(201).json(collocation);
   } catch (error) {
     console.error("Create collocation error:", error);
@@ -42,38 +49,94 @@ export const createCollocation = async (req: AuthRequest, res: Response): Promis
   }
 };
 
-// @desc    Get all collocations (paginated)
+// @desc    Get all collocations (optimized with caching and aggregation)
 // @route   GET /api/collocations
 // @access  Private
 export const getCollocations = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { page, limit, skip } = getPaginationParams(req);
-    const { difficulty, tags, search } = req.query;
+    const { difficulty, tags, search, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 
-    const query: Record<string, unknown> = {};
+    // Create cache key based on query parameters
+    const cacheKey = `list:${JSON.stringify({ page, limit, difficulty, tags, search, sortBy, sortOrder })}`;
+    
+    // Try to get from cache first (only for non-search queries to avoid stale search results)
+    if (!search) {
+      const cachedResult = await cache.getCachedCollocations(cacheKey);
+      if (cachedResult) {
+        res.json(cachedResult);
+        return;
+      }
+    }
+
+    // Build match stage for aggregation pipeline
+    const matchStage: Record<string, unknown> = {};
 
     if (difficulty) {
-      query.difficulty = difficulty;
+      matchStage.difficulty = difficulty;
     }
 
     if (tags) {
       const tagArray = Array.isArray(tags) ? tags : [tags];
-      query.tags = { $in: tagArray };
+      matchStage.tags = { $in: tagArray };
     }
 
     if (search) {
-      query.$text = { $search: search as string };
+      matchStage.$text = { $search: search as string };
     }
 
-    const collocations = await Collocation.find(query)
-      .populate("deck", "name description")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    // Build sort stage
+    const sortStage: Record<string, 1 | -1> = {};
+    sortStage[sortBy as string] = sortOrder === 'asc' ? 1 : -1;
 
-    const total = await Collocation.countDocuments(query);
+    // Use aggregation pipeline for better performance
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: 'decks',
+          localField: 'deck',
+          foreignField: '_id',
+          as: 'deck',
+          pipeline: [{ $project: { name: 1, description: 1 } }] // Only fetch needed fields
+        }
+      },
+      { $unwind: '$deck' },
+      {
+        $project: {
+          phrase: 1,
+          meaning: 1,
+          components: 1,
+          examples: 1,
+          pronunciation: 1,
+          tags: 1,
+          difficulty: 1,
+          deck: 1,
+          createdAt: 1,
+          // Include text search score if searching
+          ...(search && { score: { $meta: 'textScore' } })
+        }
+      },
+      // Sort by text score if searching, otherwise by specified field
+      { $sort: search ? { score: { $meta: 'textScore' }, ...sortStage } : sortStage },
+      {
+        $facet: {
+          collocations: [
+            { $skip: skip },
+            { $limit: limit }
+          ],
+          totalCount: [
+            { $count: 'count' }
+          ]
+        }
+      }
+    ];
 
-    res.json({
+    const [result] = await Collocation.aggregate(pipeline);
+    const collocations = result.collocations || [];
+    const total = result.totalCount[0]?.count || 0;
+
+    const responseData = {
       collocations,
       pagination: {
         page,
@@ -81,28 +144,89 @@ export const getCollocations = async (req: AuthRequest, res: Response): Promise<
         total,
         pages: Math.ceil(total / limit),
       },
-    });
+    };
+
+    // Cache the result for non-search queries (5 minutes TTL)
+    if (!search) {
+      await cache.cacheCollocations(cacheKey, responseData, 300);
+    }
+
+    res.json(responseData);
   } catch (error) {
     console.error("Get collocations error:", error);
     res.status(500).json({ msg: "Server Error" });
   }
 };
 
-// @desc    Get collocations by deck
+// @desc    Get collocations by deck (optimized with caching)
 // @route   GET /api/decks/:deckId/collocations
 // @access  Private
 export const getCollocationsByDeck = async (req: AuthRequest, res: Response): Promise<void> => {
   const { deckId } = req.params;
+  const { difficulty, limit: queryLimit } = req.query;
 
   try {
-    const deck = await Deck.findById(deckId);
+    // Create cache key for deck collocations
+    const cacheKey = `deck:${deckId}:${difficulty || 'all'}:${queryLimit || 'all'}`;
+    
+    // Try to get from cache first
+    const cachedResult = await cache.getCachedCollocations(cacheKey);
+    if (cachedResult) {
+      res.json(cachedResult);
+      return;
+    }
+
+    // Validate deck exists (use lean for performance)
+    const deck = await Deck.findById(deckId).lean();
     if (!deck) {
       res.status(404).json({ msg: "Deck not found" });
       return;
     }
 
-    const collocations = await Collocation.find({ deck: deckId }).sort({ createdAt: -1 });
-    res.json(collocations);
+    // Build optimized query
+    const query: Record<string, unknown> = { deck: deckId };
+    if (difficulty) {
+      query.difficulty = difficulty;
+    }
+
+    // Use projection to only fetch needed fields for better performance
+    const projection = {
+      phrase: 1,
+      meaning: 1,
+      components: 1,
+      examples: 1,
+      pronunciation: 1,
+      tags: 1,
+      difficulty: 1,
+      createdAt: 1,
+      'srsData.nextReview': 1
+    };
+
+    let queryBuilder = Collocation.find(query, projection)
+      .sort({ createdAt: -1 })
+      .lean(); // Use lean for better performance
+
+    // Apply limit if specified
+    if (queryLimit) {
+      queryBuilder = queryBuilder.limit(parseInt(queryLimit as string));
+    }
+
+    const collocations = await queryBuilder;
+    
+    const responseData = {
+      collocations,
+      deck: {
+        _id: deck._id,
+        name: deck.name,
+        description: deck.description
+      },
+      total: collocations.length
+    };
+
+    // Cache the result (10 minutes TTL for deck-specific data)
+    await cache.cacheCollocations(cacheKey, responseData, 600);
+    
+    res.json(responseData);
   } catch (error) {
     console.error("Get collocations by deck error:", error);
     res.status(500).json({ msg: "Server Error" });
@@ -156,6 +280,11 @@ export const updateCollocation = async (req: AuthRequest, res: Response): Promis
     if (difficulty) collocation.difficulty = difficulty;
 
     const updatedCollocation = await collocation.save();
+    
+    // Invalidate relevant caches
+    await cache.invalidateCollocationCache('*');
+    await cache.invalidateCollocationCache(`deck:${collocation.deck}:*`);
+    
     res.json(updatedCollocation);
   } catch (error) {
     console.error("Update collocation error:", error);
@@ -177,7 +306,13 @@ export const deleteCollocation = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
+    const deckId = collocation.deck;
     await collocation.deleteOne();
+    
+    // Invalidate relevant caches
+    await cache.invalidateCollocationCache('*');
+    await cache.invalidateCollocationCache(`deck:${deckId}:*`);
+    
     res.json({ msg: "Collocation removed" });
   } catch (error) {
     console.error("Delete collocation error:", error);
@@ -207,6 +342,192 @@ export const generateAudio = async (req: AuthRequest, res: Response): Promise<vo
     res.json({ audioUrl, collocation: updatedCollocation });
   } catch (error) {
     console.error("Generate audio error:", error);
+    res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+// @desc    Get collocation statistics (cached aggregation)
+// @route   GET /api/collocations/stats
+// @access  Private
+export const getCollocationStats = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    const cacheKey = 'stats:global';
+
+    // Try to get from cache first (15 minutes TTL for stats)
+    const cachedStats = await cache.getCachedCollocations(cacheKey);
+    if (cachedStats) {
+      res.json(cachedStats);
+      return;
+    }
+
+    // Use aggregation pipeline for efficient statistics calculation
+    const statsAggregation = await Collocation.aggregate([
+      {
+        $facet: {
+          // Overall statistics
+          overall: [
+            {
+              $group: {
+                _id: null,
+                totalCollocations: { $sum: 1 },
+                avgComponentsPerCollocation: { $avg: { $size: '$components' } },
+                avgExamplesPerCollocation: { $avg: { $size: '$examples' } }
+              }
+            }
+          ],
+          // Statistics by difficulty
+          byDifficulty: [
+            {
+              $group: {
+                _id: '$difficulty',
+                count: { $sum: 1 },
+                avgComponents: { $avg: { $size: '$components' } }
+              }
+            },
+            { $sort: { _id: 1 } }
+          ],
+          // Statistics by tags (top 10)
+          byTags: [
+            { $unwind: '$tags' },
+            {
+              $group: {
+                _id: '$tags',
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+          ],
+          // Recent additions
+          recentStats: [
+            {
+              $match: {
+                createdAt: {
+                  $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
+                }
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                recentCount: { $sum: 1 }
+              }
+            }
+          ]
+        }
+      }
+    ]);
+
+    const stats = statsAggregation[0];
+
+    const responseData = {
+      overall: stats.overall[0] || { totalCollocations: 0, avgComponentsPerCollocation: 0, avgExamplesPerCollocation: 0 },
+      byDifficulty: stats.byDifficulty || [],
+      topTags: stats.byTags || [],
+      recentAdditions: stats.recentStats[0]?.recentCount || 0,
+      lastUpdated: new Date()
+    };
+
+    // Cache the stats (15 minutes TTL)
+    await cache.cacheCollocations(cacheKey, responseData, 900);
+
+    res.json(responseData);
+  } catch (error) {
+    console.error("Get collocation stats error:", error);
+    res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+// @desc    Get collocations with cursor pagination (optimized)
+// @route   GET /api/collocations/cursor
+// @access  Private
+export const getCollocationsCursor = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { difficulty, tags, search } = req.query;
+
+    // Create cache key for cursor pagination
+    const cacheKey = `cursor:${JSON.stringify({ difficulty, tags, search, cursor: req.query.cursor, limit: req.query.limit })}`;
+    
+    // Try to get from cache first (only for non-search queries)
+    if (!search) {
+      const cachedResult = await cache.getCachedCollocations(cacheKey);
+      if (cachedResult) {
+        res.json(cachedResult);
+        return;
+      }
+    }
+
+    // Initialize cursor pagination
+    const cursorPagination = createCursorPagination({
+      defaultLimit: 20,
+      maxLimit: 50,
+      defaultSortField: 'createdAt',
+      defaultSortOrder: 'desc'
+    });
+
+    const params = cursorPagination.parseParams(req.query);
+
+    // Build base query
+    let baseQuery = Collocation.find();
+    
+    if (difficulty) {
+      baseQuery = baseQuery.where('difficulty').equals(difficulty);
+    }
+
+    if (tags) {
+      const tagArray = Array.isArray(tags) ? tags : [tags];
+      baseQuery = baseQuery.where('tags').in(tagArray);
+    }
+
+    if (search) {
+      baseQuery = baseQuery.where({ $text: { $search: search as string } });
+    }
+
+    // Select only necessary fields for better performance
+    baseQuery = baseQuery.select('phrase meaning components examples pronunciation tags difficulty createdAt deck')
+      .populate('deck', 'name description');
+
+    // Apply cursor pagination
+    const result = await cursorPagination.paginate(baseQuery, params);
+
+    // Cache the result for non-search queries (5 minutes TTL)
+    if (!search) {
+      await cache.cacheCollocations(cacheKey, result, 300);
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error("Get collocations cursor error:", error);
+    res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+// @desc    Get collocations for review (SRS optimized)
+// @route   GET /api/collocations/review
+// @access  Private
+export const getCollocationsForReview = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    const { limit = 20 } = req.query;
+
+    // Optimized query for SRS review using compound index
+    const reviewCollocations = await Collocation.find({
+      user: userId,
+      'srsData.nextReview': { $lte: new Date() }
+    })
+    .select('phrase meaning components examples pronunciation tags difficulty srsData deck')
+    .populate('deck', 'name')
+    .sort({ 'srsData.nextReview': 1 }) // Oldest due first
+    .limit(parseInt(limit as string))
+    .lean();
+
+    res.json({
+      collocations: reviewCollocations,
+      count: reviewCollocations.length
+    });
+  } catch (error) {
+    console.error("Get collocations for review error:", error);
     res.status(500).json({ msg: "Server Error" });
   }
 };

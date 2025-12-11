@@ -116,13 +116,82 @@ const collocationSchema = new Schema<ICollocation>(
   }
 );
 
-// Text index for search functionality
-collocationSchema.index({ phrase: "text", meaning: "text", examples: "text" });
+// === PERFORMANCE OPTIMIZED INDEXES ===
 
-// Compound indexes for common queries
-collocationSchema.index({ user: 1, deck: 1 });
-collocationSchema.index({ user: 1, "srsData.nextReview": 1 });
-collocationSchema.index({ deck: 1, difficulty: 1 });
+// Text search index for collocation search functionality
+collocationSchema.index({ 
+  phrase: "text", 
+  meaning: "text", 
+  examples: "text",
+  tags: "text" 
+}, {
+  weights: {
+    phrase: 10,      // Highest priority for phrase matching
+    meaning: 5,      // Medium priority for meaning
+    tags: 3,         // Lower priority for tags
+    examples: 1      // Lowest priority for examples
+  },
+  name: "collocation_search_index"
+});
+
+// === COMPOUND INDEXES FOR COMMON QUERY PATTERNS ===
+
+// 1. User-based queries (most common)
+collocationSchema.index({ user: 1, deck: 1, difficulty: 1 }, { 
+  name: "user_deck_difficulty_index" 
+});
+
+// 2. SRS review queries (critical for performance)
+collocationSchema.index({ 
+  user: 1, 
+  "srsData.nextReview": 1, 
+  deck: 1 
+}, { 
+  name: "srs_review_index" 
+});
+
+// 3. Deck browsing with filtering
+collocationSchema.index({ 
+  deck: 1, 
+  difficulty: 1, 
+  tags: 1 
+}, { 
+  name: "deck_filter_index" 
+});
+
+// 4. Admin/crawler queries for data management
+collocationSchema.index({ 
+  phrase: 1, 
+  deck: 1 
+}, { 
+  unique: true,  // Prevent duplicate phrases in same deck
+  name: "unique_phrase_per_deck" 
+});
+
+// 5. Category-based queries (for collocation browsing)
+collocationSchema.index({ 
+  tags: 1, 
+  difficulty: 1, 
+  createdAt: -1 
+}, { 
+  name: "category_browse_index" 
+});
+
+// 6. Performance monitoring queries
+collocationSchema.index({ 
+  createdAt: -1, 
+  user: 1 
+}, { 
+  name: "creation_tracking_index" 
+});
+
+// 7. Sparse index for pronunciation URLs (only indexed if exists)
+collocationSchema.index({ 
+  pronunciation: 1 
+}, { 
+  sparse: true,
+  name: "pronunciation_sparse_index" 
+});
 
 const Collocation = model<ICollocation>("Collocation", collocationSchema);
 export default Collocation;

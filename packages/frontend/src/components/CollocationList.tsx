@@ -46,9 +46,9 @@ export default function CollocationList({ collocations, onCollocationClick }: Co
   });
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+    <div className="min-spacing-lg">
+      {/* Clean Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-8">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
@@ -56,15 +56,15 @@ export default function CollocationList({ collocations, onCollocationClick }: Co
             placeholder="Search collocations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 min-focus"
           />
         </div>
         <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Difficulty" />
+          <SelectTrigger className="w-full sm:w-[140px] min-focus">
+            <SelectValue placeholder="Level" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Levels</SelectItem>
+          <SelectContent className="min-card">
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="beginner">Beginner</SelectItem>
             <SelectItem value="intermediate">Intermediate</SelectItem>
             <SelectItem value="advanced">Advanced</SelectItem>
@@ -73,23 +73,31 @@ export default function CollocationList({ collocations, onCollocationClick }: Co
       </div>
 
       {/* Results count */}
-      <p className="text-sm text-muted-foreground">
-        Showing {filteredCollocations.length} of {collocations.length} collocations
+      <p className="min-text-caption text-center mb-6">
+        {filteredCollocations.length} of {collocations.length} collocations
       </p>
 
       {/* Collocation cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="min-grid-auto">
         {filteredCollocations.length > 0 ? (
-          filteredCollocations.map((collocation) => (
-            <CollocationCard
+          filteredCollocations.map((collocation, index) => (
+            <div
               key={collocation._id}
-              collocation={collocation}
-              onClick={() => onCollocationClick?.(collocation)}
-            />
+              className="min-animate-fadeIn"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <CollocationCard
+                collocation={collocation}
+                onClick={() => onCollocationClick?.(collocation)}
+              />
+            </div>
           ))
         ) : (
-          <div className="col-span-full text-center py-12">
-            <p className="text-muted-foreground">No collocations found</p>
+          <div className="col-span-full text-center py-16">
+            <p className="min-text-body text-muted-foreground">No collocations found</p>
+            <p className="min-text-caption text-muted-foreground mt-2">
+              Try adjusting your search or filter criteria
+            </p>
           </div>
         )}
       </div>

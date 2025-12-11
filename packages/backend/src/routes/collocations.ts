@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createCollocation,
   getCollocations,
+  getCollocationsCursor,
   getCollocation,
   updateCollocation,
   deleteCollocation,
@@ -27,6 +28,7 @@ const router = Router();
 
 // Public routes (with authentication)
 router.get("/", protect, getCollocations);
+router.get("/cursor", protect, getCollocationsCursor); // Optimized cursor pagination
 router.get("/review", protect, getCollocationsForReview);
 router.get("/stats", protect, getCollocationStats);
 router.get("/category/:category", protect, getCollocationsByCategory);

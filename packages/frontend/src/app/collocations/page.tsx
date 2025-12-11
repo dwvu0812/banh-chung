@@ -55,12 +55,10 @@ export default function CollocationsPage(): JSX.Element {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading collocations...</p>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border border-primary border-t-transparent mx-auto mb-4"></div>
+          <p className="min-text-caption">Loading collocations...</p>
         </div>
       </div>
     );
@@ -68,86 +66,91 @@ export default function CollocationsPage(): JSX.Element {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <Button onClick={fetchCollocations}>Try Again</Button>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-6">
+          <p className="min-text-body text-destructive mb-6">{error}</p>
+          <Button onClick={fetchCollocations} className="min-focus">
+            Try Again
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          onClick={() => router.push("/dashboard")}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Button>
-
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <BookOpen className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold">English Collocations</h1>
-            </div>
-            <p className="text-muted-foreground text-lg">
-              Master English by learning natural word combinations
-            </p>
-          </div>
-          
-          <div className="flex gap-3">
-            <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600">
-              <Link href="/collocations/review">
-                <BookOpen className="mr-2 h-5 w-5" />
-                Start Review
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/quiz">
-                Take Quiz
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold text-blue-600">{collocations.length}</div>
-            <div className="text-sm text-muted-foreground">Total Available</div>
-          </div>
-          <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold text-green-600">7</div>
-            <div className="text-sm text-muted-foreground">Categories</div>
-          </div>
-          <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold text-orange-600">
-              {collocations.filter(c => c.difficulty === 'beginner').length}
-            </div>
-            <div className="text-sm text-muted-foreground">Beginner</div>
-          </div>
-          <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {collocations.filter(c => c.difficulty === 'advanced').length}
-            </div>
-            <div className="text-sm text-muted-foreground">Advanced</div>
-          </div>
+    <div className="min-h-screen bg-background">
+      {/* Minimal Header */}
+      <div className="min-border-bottom">
+        <div className="container mx-auto px-6 py-4">
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/dashboard")}
+            className="min-button-ghost min-focus mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Dashboard
+          </Button>
         </div>
       </div>
 
-      {/* Collocation List */}
-      <CollocationList
-        collocations={collocations}
-        onCollocationClick={handleCollocationClick}
-      />
+      {/* Clean Main Content */}
+      <div className="container mx-auto px-6 py-8 max-w-6xl">
+        {/* Title Section */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <BookOpen className="h-6 w-6 text-primary" />
+            <h1 className="min-text-display">English Collocations</h1>
+          </div>
+          <p className="min-text-body text-muted-foreground max-w-2xl mx-auto">
+            Master English by learning natural word combinations
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12 max-w-md mx-auto">
+          <Link href="/collocations/review" className="flex-1">
+            <Button size="lg" className="w-full min-focus">
+              <BookOpen className="mr-2 h-4 w-4" />
+              Start Review
+            </Button>
+          </Link>
+          <Link href="/quiz" className="flex-1">
+            <Button variant="outline" size="lg" className="w-full min-focus">
+              Take Quiz
+            </Button>
+          </Link>
+        </div>
+
+        {/* Minimal Statistics */}
+        <div className="min-grid-stats mb-12">
+          <div className="text-center">
+            <div className="text-2xl font-light text-primary mb-1">{collocations.length}</div>
+            <div className="min-text-caption">Total Available</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-light text-foreground mb-1">7</div>
+            <div className="min-text-caption">Categories</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-light text-foreground mb-1">
+              {collocations.filter(c => c.difficulty === 'beginner').length}
+            </div>
+            <div className="min-text-caption">Beginner</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-light text-foreground mb-1">
+              {collocations.filter(c => c.difficulty === 'advanced').length}
+            </div>
+            <div className="min-text-caption">Advanced</div>
+          </div>
+        </div>
+
+        {/* Collocation List */}
+        <CollocationList
+          collocations={collocations}
+          onCollocationClick={handleCollocationClick}
+        />
+      </div>
     </div>
   );
 }

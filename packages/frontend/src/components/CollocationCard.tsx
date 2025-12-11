@@ -42,112 +42,113 @@ export default function CollocationCard({ collocation, onClick }: CollocationCar
     }
   };
 
-  const getDifficultyColor = (difficulty: string): string => {
+  const getDifficultyIndicator = (difficulty: string): string => {
     switch (difficulty) {
       case "beginner":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+        return "●";
       case "intermediate":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        return "●●";
       case "advanced":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+        return "●●●";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "●";
     }
   };
 
   return (
-    <Card
-      className="hover:shadow-lg transition-shadow cursor-pointer"
+    <div
+      className="min-card p-6 hover:shadow-md transition-shadow cursor-pointer min-animate-fadeIn"
       onClick={onClick}
     >
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
-              {collocation.phrase}
-              {collocation.pronunciation && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={playAudio}
-                  disabled={isPlaying}
-                  className="h-8 w-8 p-0"
-                >
-                  <Volume2 className={`h-4 w-4 ${isPlaying ? "animate-pulse" : ""}`} />
-                </Button>
-              )}
-            </CardTitle>
-            <p className="text-muted-foreground mt-1">{collocation.meaning}</p>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h3 className="min-text-title">{collocation.phrase}</h3>
+            {collocation.pronunciation && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={playAudio}
+                disabled={isPlaying}
+                className="h-6 w-6 p-0 min-focus opacity-60 hover:opacity-100"
+              >
+                <Volume2 className={`h-3 w-3 ${isPlaying ? "animate-pulse" : ""}`} />
+              </Button>
+            )}
           </div>
-          <Badge className={getDifficultyColor(collocation.difficulty)}>
-            {collocation.difficulty}
-          </Badge>
+          <p className="min-text-caption mb-3">{collocation.meaning}</p>
         </div>
-      </CardHeader>
+        <span className="min-text-caption text-primary font-mono">
+          {getDifficultyIndicator(collocation.difficulty)}
+        </span>
+      </div>
 
-      <CardContent>
-        <div className="space-y-4">
-          {/* Tags */}
-          {collocation.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {collocation.tags.map((tag, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
+      {/* Tags */}
+      {collocation.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {collocation.tags.slice(0, 3).map((tag, index) => (
+            <span key={index} className="min-text-caption bg-muted/50 px-2 py-1 rounded-sm">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
 
-          {/* Expandable Components */}
-          <div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
-              className="flex items-center gap-2"
-            >
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              <span className="text-sm font-medium">
-                {isExpanded ? "Hide" : "Show"} Components
-              </span>
-            </Button>
+      {/* Expandable Components */}
+      <div className="min-border-top pt-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className="min-button-ghost p-0 h-auto min-focus"
+        >
+          <span className="min-text-caption flex items-center gap-2">
+            {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {isExpanded ? "Hide" : "Show"} Details
+          </span>
+        </Button>
 
-            {isExpanded && (
-              <div className="mt-3 space-y-2 pl-4 border-l-2 border-primary/20">
+        {isExpanded && (
+          <div className="mt-4 min-spacing-sm">
+            {/* Components */}
+            <div className="mb-4">
+              <p className="min-text-caption font-medium mb-2">Components:</p>
+              <div className="space-y-1">
                 {collocation.components.map((component, index) => (
-                  <div key={index} className="text-sm">
-                    <span className="font-semibold">{component.word}</span>
+                  <div key={index} className="min-text-caption">
+                    <span className="font-medium">{component.word}</span>
                     {component.partOfSpeech && (
-                      <span className="text-muted-foreground italic ml-2">
+                      <span className="text-muted-foreground ml-2">
                         ({component.partOfSpeech})
                       </span>
                     )}
-                    <p className="text-muted-foreground">{component.meaning}</p>
+                    <span className="text-muted-foreground ml-2">- {component.meaning}</span>
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Examples */}
+            {collocation.examples.length > 0 && (
+              <div>
+                <p className="min-text-caption font-medium mb-2">Examples:</p>
+                <div className="space-y-1">
+                  {collocation.examples.slice(0, 2).map((example, index) => (
+                    <p key={index} className="min-text-caption text-muted-foreground italic">
+                      "{example}"
+                    </p>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-
-          {/* Examples */}
-          {collocation.examples.length > 0 && (
-            <div>
-              <p className="text-sm font-medium mb-2">Examples:</p>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                {collocation.examples.slice(0, 2).map((example, index) => (
-                  <li key={index} className="italic">
-                    • {example}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 }
 

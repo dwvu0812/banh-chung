@@ -10,7 +10,15 @@ import {
 } from "../data/collocations";
 import { generateTTSUrl } from "../lib/tts";
 
-dotenv.config();
+// Load environment exactly like server does
+if (process.env.NODE_ENV !== "production") {
+  const envFile = ".env.development";
+  dotenv.config({ path: envFile });
+  console.log(`Loaded environment from ${envFile}`);
+} else {
+  console.log("Using environment variables from Railway");
+  dotenv.config();
+}
 
 async function importCollocations() {
   try {
