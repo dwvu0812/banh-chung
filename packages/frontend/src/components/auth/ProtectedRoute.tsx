@@ -17,36 +17,60 @@ interface ProtectedRouteProps {
  */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  fallback = <div className="flex items-center justify-center min-h-screen">Loading...</div>,
+  fallback = (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border border-primary border-t-transparent mx-auto mb-4"></div>
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  ),
   redirectTo = '/login',
   requireAuth = true,
 }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, accessToken } = useAuth();
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const [hasChecked, setHasChecked] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
+      // Only proceed with auth check when not loading
       if (!isLoading) {
-        if (requireAuth && !isAuthenticated) {
-          router.push(redirectTo);
-        } else {
-          setIsChecking(false);
+        setHasChecked(true);
+        
+        if (requireAuth) {
+          // Check both isAuthenticated and accessToken for double verification
+          const isActuallyAuthenticated = isAuthenticated && accessToken;
+          
+          if (!isActuallyAuthenticated) {
+            // Delay redirect slightly to avoid flash
+            setTimeout(() => {
+              setShouldRedirect(true);
+            }, 100);
+          }
         }
       }
     };
 
     checkAuth();
-  }, [isAuthenticated, isLoading, requireAuth, redirectTo, router]);
+  }, [isAuthenticated, isLoading, requireAuth, accessToken]);
 
-  // Show loading state while checking authentication
-  if (isLoading || isChecking) {
+  // Handle redirect after state is confirmed
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.push(redirectTo);
+    }
+  }, [shouldRedirect, router, redirectTo]);
+
+  // Show loading state while checking authentication or during redirect
+  if (isLoading || !hasChecked || shouldRedirect) {
     return <>{fallback}</>;
   }
 
-  // If auth is required but user is not authenticated, don't render children
-  if (requireAuth && !isAuthenticated) {
-    return null;
+  // Final check: if auth is required but user is not authenticated, don't render
+  if (requireAuth && (!isAuthenticated || !accessToken)) {
+    return <>{fallback}</>;
   }
 
   return <>{children}</>;
@@ -60,35 +84,52 @@ export const GuestRoute: React.FC<{
   children: React.ReactNode;
   redirectTo?: string;
 }> = ({ children, redirectTo = '/dashboard' }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, accessToken } = useAuth();
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const [hasChecked, setHasChecked] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
       if (!isLoading) {
-        if (isAuthenticated) {
-          router.push(redirectTo);
-        } else {
-          setIsChecking(false);
+        setHasChecked(true);
+        
+        // Check both isAuthenticated and accessToken
+        const isActuallyAuthenticated = isAuthenticated && accessToken;
+        
+        if (isActuallyAuthenticated) {
+          // Delay redirect slightly to avoid flash
+          setTimeout(() => {
+            setShouldRedirect(true);
+          }, 100);
         }
       }
     };
 
     checkAuth();
-  }, [isAuthenticated, isLoading, redirectTo, router]);
+  }, [isAuthenticated, isLoading, accessToken]);
 
-  // Show loading state while checking authentication
-  if (isLoading || isChecking) {
+  // Handle redirect after state is confirmed
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.push(redirectTo);
+    }
+  }, [shouldRedirect, router, redirectTo]);
+
+  // Show loading state while checking authentication or during redirect
+  if (isLoading || !hasChecked || shouldRedirect) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        Loading...
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border border-primary border-t-transparent mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
 
   // If user is authenticated, don't render children
-  if (isAuthenticated) {
+  if (isAuthenticated && accessToken) {
     return null;
   }
 

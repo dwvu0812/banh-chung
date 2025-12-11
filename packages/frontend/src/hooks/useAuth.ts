@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { AuthService } from '@/lib/auth';
 import type { User } from '@/store/authStore';
@@ -29,23 +29,57 @@ export const useAuth = () => {
     clearTokens,
   } = useAuthStore();
 
-  // Initialize auth state on mount
+  // Track if we're still initializing (waiting for Zustand persist to hydrate)
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+
+  // Wait for Zustand persist to hydrate the store
   useEffect(() => {
+    // Small delay to ensure Zustand persist has finished hydrating
+    const timer = setTimeout(() => {
+      setIsHydrated(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Initialize auth state after hydration
+  useEffect(() => {
+    if (!isHydrated) return;
+
     const initializeAuth = async () => {
-      // If we have a token but no user data, fetch current user
-      if (accessToken && !user) {
+      // If we have a token but no user data, try to fetch current user
+      if (accessToken && !user && isAuthenticated) {
+        setIsValidating(true);
         try {
           await AuthService.getCurrentUser();
         } catch (error) {
-          console.error('Failed to initialize user data:', error);
-          // If fetching user fails, clear tokens
-          clearTokens();
+          console.error('Failed to validate user session:', error);
+          
+          // Check if it's a network error vs auth error
+          if (error && typeof error === 'object' && 'response' in error) {
+            const response = (error as { response?: { status?: number } }).response;
+            
+            // Only logout if it's definitely an auth error (401, 403)
+            if (response?.status === 401 || response?.status === 403) {
+              console.warn('Session expired, logging out...');
+              clearTokens();
+            } else {
+              // For other errors (network, 500, etc.), keep the session
+              console.warn('Network or server error, keeping session active');
+            }
+          } else {
+            // For unknown errors, keep the session to avoid unexpected logouts
+            console.warn('Unknown error during auth validation, keeping session active');
+          }
+        } finally {
+          setIsValidating(false);
         }
       }
     };
 
     initializeAuth();
-  }, [accessToken, user, clearTokens]);
+  }, [isHydrated, accessToken, user, isAuthenticated, clearTokens]);
 
   /**
    * Login wrapper with error handling
@@ -164,7 +198,8 @@ export const useAuth = () => {
     accessToken,
     refreshToken,
     isAuthenticated,
-    isLoading: accessToken && !user, // Loading if we have token but no user data
+    // Improved loading logic: loading if we're not hydrated yet, or if we're validating auth
+    isLoading: !isHydrated || isValidating || (!isAuthenticated && accessToken),
     
     // Actions
     login,
