@@ -186,6 +186,7 @@ export default function ReviewClient() {
 
         {/* Flash Card */}
         <FlashCard
+          type="vocabulary"
           word={currentCard.word}
           definition={currentCard.definition}
           pronunciation={currentCard.pronunciation}
