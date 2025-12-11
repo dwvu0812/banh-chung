@@ -7,6 +7,12 @@ import {
   deleteCollocation,
   generateAudio,
 } from "../controllers/collocationController";
+import {
+  getCollocationsForReview,
+  submitCollocationReview,
+  getCollocationStats,
+  getCollocationsByCategory,
+} from "../controllers/collocationReviewController";
 import { protect } from "../middleware/authMiddleware";
 import { requireSuperAdmin } from "../middleware/adminMiddleware";
 import { validate } from "../middleware/validate";
@@ -21,7 +27,11 @@ const router = Router();
 
 // Public routes (with authentication)
 router.get("/", protect, getCollocations);
+router.get("/review", protect, getCollocationsForReview);
+router.get("/stats", protect, getCollocationStats);
+router.get("/category/:category", protect, getCollocationsByCategory);
 router.get("/:id", protect, validate(getCollocationSchema), getCollocation);
+router.post("/:id/review", protect, validate(getCollocationSchema), submitCollocationReview);
 
 // Super admin only routes
 router.post(

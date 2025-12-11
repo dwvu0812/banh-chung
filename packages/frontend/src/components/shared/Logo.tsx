@@ -8,7 +8,7 @@ export function Logo() {
       <div className="flex flex-col">
         <span className="font-bold text-lg tracking-tight">Bánh chưng</span>
         <span className="text-xs text-muted-foreground">
-          Học từ vựng mỗi ngày
+          Master English Collocations
         </span>
       </div>
     </Link>

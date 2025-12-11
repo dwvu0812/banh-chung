@@ -11,6 +11,8 @@
     "seed:prod": "node dist/seeds/seedDatabase.js",
     "verify-seed": "ts-node src/seeds/verifySeededData.ts",
     "verify-env": "node verify-env.js",
+    "import-collocations": "ts-node src/scripts/importCollocations.ts",
+    "validate-data": "echo 'Data validation script coming soon'",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

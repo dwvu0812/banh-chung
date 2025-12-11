@@ -8,6 +8,7 @@ import Collocation from "../models/Collocation";
 import { sampleUsers, sampleDecks, sampleFlashcards } from "./englishVietnameseSeedData";
 import { collocationDecks, sampleCollocations } from "./collocationSeedData";
 import { generateTTSUrl } from "../lib/tts";
+import importCollocations from "../scripts/importCollocations";
 
 dotenv.config();
 
@@ -166,6 +167,10 @@ const seedDatabase = async () => {
       const collocationCount = sampleCollocations.filter(col => col.deckIndex === index).length;
       console.log(`📖 "${deck.name}" - Owner: superadmin - Collocations: ${collocationCount}`);
     });
+
+    // Import built-in collocations
+    console.log("\n=== IMPORTING BUILT-IN COLLOCATIONS ===");
+    await importCollocations();
 
     console.log("\n🎉 Database seeded successfully!");
     

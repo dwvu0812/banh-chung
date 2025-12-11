@@ -158,7 +158,68 @@ export default function DashboardClient() {
       </header>
 
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        {/* === Section Thống kê & Hành động chính === */}
+        {/* === Collocation Learning - Main Feature === */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+            <BookOpen className="h-7 w-7 text-primary" />
+            English Collocations Learning
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="col-span-full lg:col-span-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Start Learning Collocations</h3>
+                    <p className="text-blue-100 mb-4">
+                      Master English through natural word combinations
+                    </p>
+                    <div className="flex gap-3">
+                      <Button asChild variant="secondary" size="lg">
+                        <Link href="/collocations">
+                          Browse Collocations
+                          <ArrowRight className="ml-2 h-5 w-5" />
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" size="lg" className="text-white border-white hover:bg-white/10">
+                        <Link href="/collocations/review">
+                          Start Review
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                  <BookOpen className="h-24 w-24 text-white/20" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Your Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Available:</span>
+                    <span className="text-2xl font-bold text-primary">
+                      {stats?.collocation?.total || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Due Today:</span>
+                    <span className="text-lg font-semibold text-orange-600">
+                      {stats?.collocation?.dueToday || 0}
+                    </span>
+                  </div>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/collocations">View All</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* === Section Thống kê & Hành động phụ === */}
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -220,61 +281,40 @@ export default function DashboardClient() {
           </Card>
         </div>
 
-        {/* === Collocation & Quiz Stats === */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <Link href="/collocations">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg font-semibold">
-                  English Collocations
-                </CardTitle>
-                <BookOpen className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Available:</span>
-                    <span className="text-2xl font-bold">{stats?.collocation?.total || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Due Today:</span>
-                    <span className="text-lg font-semibold text-primary">
-                      {stats?.collocation?.dueToday || 0}
-                    </span>
-                  </div>
-                  <Button variant="outline" className="w-full mt-4">
-                    Browse Collocations
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Link>
-          </Card>
-
+        {/* === Quiz Performance === */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Trophy className="h-6 w-6 text-primary" />
+            Quiz Performance
+          </h3>
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <Link href="/quiz">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold">
-                  Quiz Performance
+                  Test Your Knowledge
                 </CardTitle>
                 <Trophy className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Quizzes Taken:</span>
-                    <span className="text-2xl font-bold">{stats?.quiz?.totalTaken || 0}</span>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">
+                      {stats?.quiz?.totalTaken || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Quizzes Taken</div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Average Score:</span>
-                    <span className="text-lg font-semibold text-primary">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
                       {stats?.quiz?.averageScore || 0}%
-                    </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">Average Score</div>
                   </div>
-                  <Button variant="outline" className="w-full mt-4">
-                    Take a Quiz
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center justify-center">
+                    <Button variant="outline" className="w-full">
+                      Take a Quiz
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Link>
