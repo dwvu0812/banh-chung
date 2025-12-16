@@ -1,10 +1,10 @@
-import cron from 'node-cron';
-import OxfordCrawlerService from '../services/oxfordCrawler';
-import Collocation from '../models/Collocation';
-import Deck from '../models/Deck';
-import User, { UserRole } from '../models/User';
-import { generateTTSUrl } from '../lib/tts';
-import cache from '../utils/cache';
+import cron from "node-cron";
+import OxfordCrawlerService from "../services/oxfordCrawler";
+import Collocation from "../models/Collocation";
+import Deck from "../models/Deck";
+import User, { UserRole } from "../models/User";
+import { generateTTSUrl } from "../lib/tts";
+import cache from "../utils/cache";
 
 interface CrawlerJobStats {
   startTime: Date;
@@ -13,7 +13,7 @@ interface CrawlerJobStats {
   totalSaved: number;
   totalSkipped: number;
   errors: string[];
-  status: 'running' | 'completed' | 'failed';
+  status: "running" | "completed" | "failed";
 }
 
 class CollocationCrawlerJob {
@@ -32,20 +32,22 @@ class CollocationCrawlerJob {
   async initialize(): Promise<void> {
     try {
       await this.crawler.initialize();
-      
+
       // Find system user
       this.systemUser = await User.findOne({
-        email: 'system@banh-chung.com',
-        role: UserRole.SUPER_ADMIN
+        email: "system@banh-chung.com",
+        role: UserRole.SUPER_ADMIN,
       });
 
       if (!this.systemUser) {
-        throw new Error('System user not found. Please run collocation import script first.');
+        throw new Error(
+          "System user not found. Please run collocation import script first."
+        );
       }
 
-      console.log('Collocation Crawler Job initialized successfully');
+      console.log("Collocation Crawler Job initialized successfully");
     } catch (error) {
-      console.error('Failed to initialize Collocation Crawler Job:', error);
+      console.error("Failed to initialize Collocation Crawler Job:", error);
       throw error;
     }
   }
@@ -55,15 +57,20 @@ class CollocationCrawlerJob {
    */
   startWeeklyJob(): void {
     // Run every Sunday at 2:00 AM
-    cron.schedule('0 2 * * 0', async () => {
-      console.log('Starting weekly collocation crawling job...');
-      await this.runCrawlerJob();
-    }, {
-      scheduled: true,
-      timezone: 'UTC'
-    });
+    cron.schedule(
+      "0 2 * * 0",
+      async () => {
+        console.log("Starting weekly collocation crawling job...");
+        await this.runCrawlerJob();
+      },
+      {
+        timezone: "UTC",
+      }
+    );
 
-    console.log('Weekly collocation crawler job scheduled (Sundays at 2:00 AM UTC)');
+    console.log(
+      "Weekly collocation crawler job scheduled (Sundays at 2:00 AM UTC)"
+    );
   }
 
   /**
@@ -71,7 +78,7 @@ class CollocationCrawlerJob {
    */
   async runCrawlerJob(targetCount: number = 50): Promise<CrawlerJobStats> {
     if (this.isRunning) {
-      throw new Error('Crawler job is already running');
+      throw new Error("Crawler job is already running");
     }
 
     this.isRunning = true;
@@ -81,19 +88,21 @@ class CollocationCrawlerJob {
       totalSaved: 0,
       totalSkipped: 0,
       errors: [],
-      status: 'running'
+      status: "running",
     };
 
     try {
-      console.log(`Starting collocation crawling job with target count: ${targetCount}`);
+      console.log(
+        `Starting collocation crawling job with target count: ${targetCount}`
+      );
 
       // Crawl new collocations
       const newCollocations = await this.crawler.crawlCollocations(targetCount);
       jobStats.totalFetched = newCollocations.length;
 
       if (newCollocations.length === 0) {
-        console.log('No new collocations found');
-        jobStats.status = 'completed';
+        console.log("No new collocations found");
+        jobStats.status = "completed";
         jobStats.endTime = new Date();
         this.lastJobStats = jobStats;
         this.isRunning = false;
@@ -107,9 +116,9 @@ class CollocationCrawlerJob {
       jobStats.errors = saveResults.errors;
 
       // Invalidate cache after successful crawling
-      await cache.invalidateCollocationCache('*');
+      await cache.invalidateCollocationCache("*");
 
-      jobStats.status = 'completed';
+      jobStats.status = "completed";
       jobStats.endTime = new Date();
 
       console.log(`Crawling job completed successfully:
@@ -117,12 +126,13 @@ class CollocationCrawlerJob {
         - Saved: ${jobStats.totalSaved}
         - Skipped: ${jobStats.totalSkipped}
         - Errors: ${jobStats.errors.length}`);
-
     } catch (error) {
-      console.error('Crawler job failed:', error);
-      jobStats.status = 'failed';
+      console.error("Crawler job failed:", error);
+      jobStats.status = "failed";
       jobStats.endTime = new Date();
-      jobStats.errors.push(error instanceof Error ? error.message : 'Unknown error');
+      jobStats.errors.push(
+        error instanceof Error ? error.message : "Unknown error"
+      );
     } finally {
       this.isRunning = false;
       this.lastJobStats = jobStats;
@@ -147,11 +157,11 @@ class CollocationCrawlerJob {
       try {
         // Find or create appropriate deck
         const deck = await this.findOrCreateDeck(collocationData.category);
-        
+
         // Check if collocation already exists
         const existingCollocation = await Collocation.findOne({
           phrase: collocationData.phrase,
-          deck: deck._id
+          deck: deck._id,
         });
 
         if (existingCollocation) {
@@ -188,9 +198,10 @@ class CollocationCrawlerJob {
         if (saved % 10 === 0) {
           console.log(`Saved ${saved} collocations...`);
         }
-
       } catch (error) {
-        const errorMsg = `Failed to save collocation "${collocationData.phrase}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+        const errorMsg = `Failed to save collocation "${
+          collocationData.phrase
+        }": ${error instanceof Error ? error.message : "Unknown error"}`;
         errors.push(errorMsg);
         console.error(errorMsg);
       }
@@ -204,20 +215,20 @@ class CollocationCrawlerJob {
    */
   private async findOrCreateDeck(category: string): Promise<any> {
     const categoryNames: Record<string, string> = {
-      'daily-life': 'Daily Life Collocations',
-      'business': 'Business Collocations',
-      'academic': 'Academic Collocations',
-      'technology': 'Technology Collocations',
-      'travel': 'Travel Collocations',
-      'health': 'Health & Medical Collocations',
-      'emotions': 'Emotions & Feelings Collocations'
+      "daily-life": "Daily Life Collocations",
+      business: "Business Collocations",
+      academic: "Academic Collocations",
+      technology: "Technology Collocations",
+      travel: "Travel Collocations",
+      health: "Health & Medical Collocations",
+      emotions: "Emotions & Feelings Collocations",
     };
 
-    const deckName = categoryNames[category] || 'General Collocations';
-    
+    const deckName = categoryNames[category] || "General Collocations";
+
     let deck = await Deck.findOne({
       name: deckName,
-      user: this.systemUser._id
+      user: this.systemUser._id,
     });
 
     if (!deck) {
@@ -225,7 +236,7 @@ class CollocationCrawlerJob {
         name: deckName,
         description: `Automatically generated ${category} collocations from Oxford Dictionary`,
         user: this.systemUser._id,
-        isPublic: true
+        isPublic: true,
       });
       await deck.save();
       console.log(`Created new deck: ${deckName}`);
@@ -243,7 +254,7 @@ class CollocationCrawlerJob {
   } {
     return {
       isRunning: this.isRunning,
-      lastJob: this.lastJobStats
+      lastJob: this.lastJobStats,
     };
   }
 
@@ -260,7 +271,7 @@ class CollocationCrawlerJob {
    */
   stopJob(): void {
     if (this.isRunning) {
-      console.log('Stopping crawler job...');
+      console.log("Stopping crawler job...");
       this.isRunning = false;
     }
   }

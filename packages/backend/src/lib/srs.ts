@@ -4,7 +4,7 @@ interface SRSCalculationResult {
   easeFactor: number;
   nextReview: Date;
   confidence?: number;
-  difficulty?: 'easy' | 'normal' | 'hard';
+  difficulty?: "easy" | "normal" | "hard";
 }
 
 interface SRSBatchItem {
@@ -52,12 +52,12 @@ export function calculateSM2(
 ): SRSCalculationResult {
   // Input validation
   if (quality < 0 || quality > 5) {
-    throw new Error('Quality must be between 0 and 5');
+    throw new Error("Quality must be between 0 and 5");
   }
 
   // Generate cache key for frequently used calculations
   const cacheKey = `${quality}-${repetitions}-${previousInterval}-${previousEaseFactor}`;
-  
+
   // Check cache first for performance
   if (intervalCache.has(cacheKey)) {
     const cached = intervalCache.get(cacheKey)!;
@@ -71,20 +71,23 @@ export function calculateSM2(
   let newInterval: number;
   let newRepetitions: number;
   let confidence: number;
-  let difficulty: 'easy' | 'normal' | 'hard';
+  let difficulty: "easy" | "normal" | "hard";
 
   if (quality < 3) {
     // Failed review - reset with optimized parameters
     newInterval = 1;
     newRepetitions = 0;
     // More gradual ease factor reduction for better retention
-    newEaseFactor = Math.max(1.3, previousEaseFactor - (0.15 + (3 - quality) * 0.05));
+    newEaseFactor = Math.max(
+      1.3,
+      previousEaseFactor - (0.15 + (3 - quality) * 0.05)
+    );
     confidence = quality / 5;
-    difficulty = 'hard';
+    difficulty = "hard";
   } else {
     // Successful review
     newRepetitions = repetitions + 1;
-    
+
     if (repetitions === 0) {
       newInterval = 1;
       newEaseFactor = previousEaseFactor;
@@ -95,25 +98,26 @@ export function calculateSM2(
     } else {
       // Standard SM-2 calculation with optimizations
       newInterval = Math.round(previousInterval * previousEaseFactor);
-      
+
       // Enhanced ease factor calculation
       const qualityBonus = quality === 5 ? 0.15 : quality === 4 ? 0.1 : 0.05;
-      newEaseFactor = previousEaseFactor + 
+      newEaseFactor =
+        previousEaseFactor +
         (qualityBonus - (5 - quality) * (0.08 + (5 - quality) * 0.02));
     }
 
     // Apply quality-based adjustments
     if (quality === 5) {
       newInterval = Math.round(newInterval * 1.1); // Bonus for perfect recall
-      difficulty = 'easy';
+      difficulty = "easy";
     } else if (quality === 3) {
       newInterval = Math.round(newInterval * 0.9); // Slight penalty for hard recall
-      difficulty = 'hard';
+      difficulty = "hard";
     } else {
-      difficulty = 'normal';
+      difficulty = "normal";
     }
 
-    confidence = Math.min(1, quality / 5 + (newRepetitions * 0.1));
+    confidence = Math.min(1, quality / 5 + newRepetitions * 0.1);
   }
 
   // Ensure minimum ease factor
@@ -152,10 +156,12 @@ export function calculateSM2(
  * @param items Array of items to calculate
  * @returns Array of calculation results
  */
-export function calculateSM2Batch(items: SRSBatchItem[]): (SRSCalculationResult & { id: string })[] {
+export function calculateSM2Batch(
+  items: SRSBatchItem[]
+): (SRSCalculationResult & { id: string })[] {
   const startTime = Date.now();
-  
-  const results = items.map(item => ({
+
+  const results = items.map((item) => ({
     id: item.id,
     ...calculateSM2(
       item.quality,
@@ -167,7 +173,9 @@ export function calculateSM2Batch(items: SRSBatchItem[]): (SRSCalculationResult 
   }));
 
   const processingTime = Date.now() - startTime;
-  console.log(`Batch processed ${items.length} SRS calculations in ${processingTime}ms`);
+  console.log(
+    `Batch processed ${items.length} SRS calculations in ${processingTime}ms`
+  );
 
   return results;
 }
@@ -177,12 +185,14 @@ export function calculateSM2Batch(items: SRSBatchItem[]): (SRSCalculationResult 
  * @param reviews Array of review data
  * @returns Analytics object
  */
-export function calculateSRSAnalytics(reviews: Array<{
-  quality: number;
-  interval: number;
-  reviewTime?: number;
-  createdAt: Date;
-}>): SRSAnalytics {
+export function calculateSRSAnalytics(
+  reviews: Array<{
+    quality: number;
+    interval: number;
+    reviewTime?: number;
+    createdAt: Date;
+  }>
+): SRSAnalytics {
   if (reviews.length === 0) {
     return {
       totalReviews: 0,
@@ -196,14 +206,17 @@ export function calculateSRSAnalytics(reviews: Array<{
   }
 
   const totalReviews = reviews.length;
-  const averageQuality = reviews.reduce((sum, r) => sum + r.quality, 0) / totalReviews;
-  const successfulReviews = reviews.filter(r => r.quality >= 3).length;
+  const averageQuality =
+    reviews.reduce((sum, r) => sum + r.quality, 0) / totalReviews;
+  const successfulReviews = reviews.filter((r) => r.quality >= 3).length;
   const retentionRate = (successfulReviews / totalReviews) * 100;
-  const averageInterval = reviews.reduce((sum, r) => sum + r.interval, 0) / totalReviews;
+  const averageInterval =
+    reviews.reduce((sum, r) => sum + r.interval, 0) / totalReviews;
 
   // Calculate difficulty distribution
   const difficultyDistribution = reviews.reduce((acc, r) => {
-    const difficulty = r.quality >= 4 ? 'easy' : r.quality >= 3 ? 'normal' : 'hard';
+    const difficulty =
+      r.quality >= 4 ? "easy" : r.quality >= 3 ? "normal" : "hard";
     acc[difficulty] = (acc[difficulty] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -219,10 +232,13 @@ export function calculateSRSAnalytics(reviews: Array<{
   }
 
   // Calculate average time to review
-  const reviewTimes = reviews.filter(r => r.reviewTime).map(r => r.reviewTime!);
-  const timeToReview = reviewTimes.length > 0 
-    ? reviewTimes.reduce((sum, time) => sum + time, 0) / reviewTimes.length 
-    : 0;
+  const reviewTimes = reviews
+    .filter((r) => r.reviewTime)
+    .map((r) => r.reviewTime!);
+  const timeToReview =
+    reviewTimes.length > 0
+      ? reviewTimes.reduce((sum, time) => sum + time, 0) / reviewTimes.length
+      : 0;
 
   return {
     totalReviews,
@@ -252,31 +268,31 @@ export function getOptimalReviewSchedule(
   maxReviews: number = 50
 ): Array<{ id: string; scheduledTime: Date; priority: number }> {
   const now = new Date();
-  
+
   // Filter cards due for review
-  const dueCards = cards.filter(card => card.nextReview <= now);
-  
+  const dueCards = cards.filter((card) => card.nextReview <= now);
+
   // Sort by priority: overdue cards first, then by ease factor (harder cards first)
   const sortedCards = dueCards.sort((a, b) => {
     const aOverdue = Math.max(0, now.getTime() - a.nextReview.getTime());
     const bOverdue = Math.max(0, now.getTime() - b.nextReview.getTime());
-    
+
     if (aOverdue !== bOverdue) {
       return bOverdue - aOverdue; // More overdue first
     }
-    
+
     // Then by ease factor (lower = harder = higher priority)
     if (a.easeFactor !== b.easeFactor) {
       return a.easeFactor - b.easeFactor;
     }
-    
+
     // Finally by custom priority
     return (b.priority || 0) - (a.priority || 0);
   });
 
   // Take only the maximum number of reviews
   const selectedCards = sortedCards.slice(0, maxReviews);
-  
+
   return selectedCards.map((card, index) => ({
     id: card.id,
     scheduledTime: new Date(now.getTime() + index * 1000), // Spread reviews by 1 second
@@ -289,6 +305,41 @@ export function getOptimalReviewSchedule(
  */
 export function clearSRSCache(): void {
   intervalCache.clear();
+}
+
+/**
+ * Update SRS data based on review rating
+ * @param currentSRSData Current SRS data
+ * @param rating Review rating (0-5)
+ * @returns Updated SRS data
+ */
+export function updateSRSData(
+  currentSRSData: {
+    interval: number;
+    easeFactor: number;
+    repetitions: number;
+    nextReview: Date;
+  },
+  rating: number
+): {
+  interval: number;
+  easeFactor: number;
+  repetitions: number;
+  nextReview: Date;
+} {
+  const result = calculateSM2(
+    rating,
+    currentSRSData.repetitions,
+    currentSRSData.interval,
+    currentSRSData.easeFactor
+  );
+
+  return {
+    interval: result.interval,
+    easeFactor: result.easeFactor,
+    repetitions: result.repetitions,
+    nextReview: result.nextReview,
+  };
 }
 
 /**

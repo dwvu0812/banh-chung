@@ -78,8 +78,8 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
   const startTime = Date.now();
 
   // Override res.end to capture response time
-  const originalEnd = res.end;
-  res.end = function(...args: any[]) {
+  const originalEnd = res.end.bind(res);
+  res.end = function(chunk?: any, encoding?: BufferEncoding | (() => void), cb?: (() => void)): Response {
     const responseTime = Date.now() - startTime;
     
     // Add metric to monitor
@@ -98,9 +98,9 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
       console.warn(`Slow query detected: ${req.method} ${req.path} - ${responseTime}ms`);
     }
 
-    // Call original end method
-    originalEnd.apply(this, args);
-  };
+    // Call original end method with proper arguments
+    return originalEnd(chunk, encoding as BufferEncoding, cb);
+  } as any;
 
   next();
 };
