@@ -90,7 +90,7 @@ export default function TTSTestPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm">
-              <p><strong>Browser:</strong> {navigator.userAgent.split(' ')[0]}</p>
+              <p><strong>Browser:</strong> {typeof navigator !== 'undefined' ? navigator.userAgent.split(' ')[0] : 'Unknown (SSR)'}</p>
               <p><strong>Available English Voices:</strong> {voices.length}</p>
               {voices.length > 0 && (
                 <ul className="list-disc list-inside ml-4">

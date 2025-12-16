@@ -21,6 +21,14 @@ export const speakText = (
   options: TTSOptions = {}
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
+    // Check if we're in browser environment
+    if (typeof window === "undefined") {
+      reject(
+        new Error("Web Speech API not available (server-side environment)")
+      );
+      return;
+    }
+
     // Check if Web Speech API is supported
     if (!("speechSynthesis" in window)) {
       reject(new Error("Web Speech API not supported in this browser"));
@@ -59,7 +67,7 @@ export const speakText = (
  * Stop any ongoing speech
  */
 export const stopSpeech = (): void => {
-  if ("speechSynthesis" in window) {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
     window.speechSynthesis.cancel();
   }
 };
@@ -68,7 +76,11 @@ export const stopSpeech = (): void => {
  * Check if TTS is supported in the current browser
  */
 export const isTTSSupported = (): boolean => {
-  return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+  return (
+    typeof window !== "undefined" &&
+    "speechSynthesis" in window &&
+    "SpeechSynthesisUtterance" in window
+  );
 };
 
 /**
@@ -77,7 +89,7 @@ export const isTTSSupported = (): boolean => {
  * @returns Array of available voices
  */
 export const getVoicesForLanguage = (lang: string): SpeechSynthesisVoice[] => {
-  if (!isTTSSupported()) return [];
+  if (!isTTSSupported() || typeof window === "undefined") return [];
 
   const voices = window.speechSynthesis.getVoices();
   return voices.filter((voice) => voice.lang.startsWith(lang.split("-")[0]));
@@ -88,6 +100,12 @@ export const getVoicesForLanguage = (lang: string): SpeechSynthesisVoice[] => {
  */
 export const ensureVoicesLoaded = (): Promise<SpeechSynthesisVoice[]> => {
   return new Promise((resolve) => {
+    // Check if we're in browser environment
+    if (typeof window === "undefined") {
+      resolve([]);
+      return;
+    }
+
     const voices = window.speechSynthesis.getVoices();
 
     if (voices.length > 0) {
@@ -130,6 +148,11 @@ export const ensureVoicesLoaded = (): Promise<SpeechSynthesisVoice[]> => {
 export const playAudioFromUrl = async (url: string | null): Promise<void> => {
   if (!url) {
     throw new Error("No audio URL provided - use speakText instead");
+  }
+
+  // Check if we're in browser environment
+  if (typeof window === "undefined") {
+    throw new Error("Audio playback not available (server-side environment)");
   }
 
   // Attempt to play from URL but handle failures gracefully
