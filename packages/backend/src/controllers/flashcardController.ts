@@ -158,9 +158,9 @@ export const generateAudio = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ msg: "User not authorized" });
     }
 
-    // Generate TTS URL
+    // Note: Now using Web Speech API on frontend, no need for external TTS URLs
     const audioUrl = generateTTSUrl(card.word, lang || "en-US");
-    card.pronunciation = audioUrl;
+    card.pronunciation = audioUrl; // Will be null, indicating to use Web Speech API
 
     const updatedCard = await card.save();
     res.json({ audioUrl, card: updatedCard });

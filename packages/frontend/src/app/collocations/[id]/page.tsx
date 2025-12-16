@@ -60,12 +60,24 @@ export default function CollocationDetailPage(): JSX.Element {
     }
   };
 
-  const playAudio = (): void => {
-    if (collocation?.pronunciation && !isPlaying) {
-      setIsPlaying(true);
-      const audio = new Audio(collocation.pronunciation);
-      audio.play();
-      audio.onended = () => setIsPlaying(false);
+  const playAudio = async (): Promise<void> => {
+    if (!collocation || isPlaying) return;
+    
+    setIsPlaying(true);
+    
+    try {
+      // Import TTS utilities (dynamic import to avoid SSR issues)
+      const { speakText, playAudioFromUrl, isTTSSupported } = await import('@/lib/tts');
+      
+      if (isTTSSupported()) {
+        await speakText(collocation.phrase, { lang: 'en-US' });
+      } else if (collocation.pronunciation) {
+        await playAudioFromUrl(collocation.pronunciation);
+      }
+    } catch (error) {
+      console.warn('TTS failed:', error);
+    } finally {
+      setIsPlaying(false);
     }
   };
 

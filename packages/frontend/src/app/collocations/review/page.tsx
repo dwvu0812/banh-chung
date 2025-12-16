@@ -124,13 +124,25 @@ export default function CollocationReviewPage(): JSX.Element {
     }
   }, [collocations, currentIndex, reviewedCount, sessionStartTime, router]);
 
-  const playAudio = (): void => {
+  const playAudio = async (): Promise<void> => {
     const currentCollocation = collocations[currentIndex];
-    if (currentCollocation?.pronunciation && !isPlaying) {
-      setIsPlaying(true);
-      const audio = new Audio(currentCollocation.pronunciation);
-      audio.play();
-      audio.onended = () => setIsPlaying(false);
+    if (!currentCollocation || isPlaying) return;
+    
+    setIsPlaying(true);
+    
+    try {
+      // Import TTS utilities (dynamic import to avoid SSR issues)
+      const { speakText, playAudioFromUrl, isTTSSupported } = await import('@/lib/tts');
+      
+      if (isTTSSupported()) {
+        await speakText(currentCollocation.phrase, { lang: 'en-US' });
+      } else if (currentCollocation.pronunciation) {
+        await playAudioFromUrl(currentCollocation.pronunciation);
+      }
+    } catch (error) {
+      console.warn('TTS failed:', error);
+    } finally {
+      setIsPlaying(false);
     }
   };
 

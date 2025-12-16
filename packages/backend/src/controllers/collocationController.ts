@@ -335,8 +335,9 @@ export const generateAudio = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
+    // Note: Now using Web Speech API on frontend, no need for external TTS URLs
     const audioUrl = generateTTSUrl(collocation.phrase, lang || "en-US");
-    collocation.pronunciation = audioUrl;
+    collocation.pronunciation = audioUrl; // Will be null, indicating to use Web Speech API
 
     const updatedCollocation = await collocation.save();
     res.json({ audioUrl, collocation: updatedCollocation });

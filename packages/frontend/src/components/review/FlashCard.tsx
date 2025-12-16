@@ -54,12 +54,27 @@ export function FlashCard(props: FlashCardProps) {
     onFlip?.(newFlipped);
   };
 
-  const handlePlayAudio = () => {
-    if (pronunciation) {
-      const audio = new Audio(pronunciation);
-      setIsPlaying(true);
-      audio.play();
-      audio.onended = () => setIsPlaying(false);
+  const handlePlayAudio = async () => {
+    if (!pronunciation || isPlaying) return;
+    
+    setIsPlaying(true);
+    
+    try {
+      // Import TTS utilities (dynamic import to avoid SSR issues)  
+      const { speakText, playAudioFromUrl, isTTSSupported } = await import('@/lib/tts');
+      
+      // Determine the text to speak based on card type
+      const textToSpeak = props.type === 'vocabulary' ? props.word : props.phrase;
+      
+      if (isTTSSupported()) {
+        await speakText(textToSpeak, { lang: 'en-US' });
+      } else if (pronunciation) {
+        await playAudioFromUrl(pronunciation);
+      }
+    } catch (error) {
+      console.warn('TTS failed:', error);
+    } finally {
+      setIsPlaying(false);
     }
   };
 

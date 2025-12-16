@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CollocationList from "@/components/CollocationList";
 import { Button } from "@/components/ui/button";
+import { PaginationWrapper, PaginationInfo } from "@/components/ui/pagination-wrapper";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
@@ -25,21 +26,46 @@ interface Collocation {
   difficulty: "beginner" | "intermediate" | "advanced";
 }
 
+interface PaginationData {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+}
+
+interface CollocationsResponse {
+  collocations: Collocation[];
+  pagination: PaginationData;
+}
+
 export default function CollocationsPage(): JSX.Element {
   const router = useRouter();
   const [collocations, setCollocations] = useState<Collocation[]>([]);
+  const [pagination, setPagination] = useState<PaginationData>({
+    page: 1,
+    limit: 12,
+    total: 0,
+    pages: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCollocations();
+    fetchCollocations(1);
   }, []);
 
-  const fetchCollocations = async (): Promise<void> => {
+  const fetchCollocations = async (page: number = pagination.page): Promise<void> => {
     try {
       setLoading(true);
-      const response = await api.get("/collocations");
+      const response = await api.get<CollocationsResponse>("/collocations", {
+        params: {
+          page,
+          limit: pagination.limit
+        }
+      });
+      
       setCollocations(response.data.collocations || []);
+      setPagination(response.data.pagination || { page: 1, limit: 12, total: 0, pages: 0 });
       setError(null);
     } catch (err) {
       console.error("Failed to fetch collocations:", err);
@@ -47,6 +73,11 @@ export default function CollocationsPage(): JSX.Element {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (page: number): void => {
+    fetchCollocations(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCollocationClick = (collocation: Collocation): void => {
@@ -122,9 +153,9 @@ export default function CollocationsPage(): JSX.Element {
         </div>
 
         {/* Minimal Statistics */}
-        <div className="min-grid-stats mb-12">
+        <div className="min-grid-stats mb-8">
           <div className="text-center">
-            <div className="text-2xl font-light text-primary mb-1">{collocations.length}</div>
+            <div className="text-2xl font-light text-primary mb-1">{pagination.total}</div>
             <div className="min-text-caption">Total Available</div>
           </div>
           <div className="text-center">
@@ -135,21 +166,40 @@ export default function CollocationsPage(): JSX.Element {
             <div className="text-2xl font-light text-foreground mb-1">
               {collocations.filter(c => c.difficulty === 'beginner').length}
             </div>
-            <div className="min-text-caption">Beginner</div>
+            <div className="min-text-caption">This Page: Beginner</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-light text-foreground mb-1">
               {collocations.filter(c => c.difficulty === 'advanced').length}
             </div>
-            <div className="min-text-caption">Advanced</div>
+            <div className="min-text-caption">This Page: Advanced</div>
           </div>
+        </div>
+
+        {/* Pagination Info */}
+        <div className="flex justify-center mb-6">
+          <PaginationInfo 
+            totalItems={pagination.total}
+            itemsPerPage={pagination.limit}
+            currentPage={pagination.page}
+          />
         </div>
 
         {/* Collocation List */}
         <CollocationList
           collocations={collocations}
           onCollocationClick={handleCollocationClick}
+          enableClientFiltering={false}
         />
+
+        {/* Pagination Controls */}
+        <div className="mt-12 mb-8">
+          <PaginationWrapper
+            currentPage={pagination.page}
+            totalPages={pagination.pages}
+            onPageChange={handlePageChange}
+          />
+        </div>
       </div>
     </div>
   );

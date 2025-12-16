@@ -2,32 +2,24 @@ import { generateTTSUrl, isValidAudioUrl } from "../../lib/tts";
 
 describe("TTS Library", () => {
   describe("generateTTSUrl", () => {
-    it("should generate a valid TTS URL for English", () => {
+    it("should return null to indicate Web Speech API should be used", () => {
       const url = generateTTSUrl("hello", "en-US");
-
-      expect(url).toContain("translate.google.com");
-      expect(url).toContain("tl=en-US");
-      expect(url).toContain("q=hello");
+      expect(url).toBeNull();
     });
 
-    it("should handle special characters in text", () => {
+    it("should return null for any text input", () => {
       const url = generateTTSUrl("hello world!", "en-US");
-
-      expect(url).toContain("translate.google.com");
-      expect(url).toContain(encodeURIComponent("hello world!"));
+      expect(url).toBeNull();
     });
 
-    it("should use default language en-US if not specified", () => {
+    it("should return null regardless of language", () => {
       const url = generateTTSUrl("hello");
-
-      expect(url).toContain("tl=en-US");
+      expect(url).toBeNull();
     });
 
-    it("should support different languages", () => {
+    it("should return null for different languages", () => {
       const url = generateTTSUrl("xin chào", "vi");
-
-      expect(url).toContain("tl=vi");
-      expect(url).toContain(encodeURIComponent("xin chào"));
+      expect(url).toBeNull();
     });
   });
 

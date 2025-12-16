@@ -159,8 +159,8 @@ class CollocationCrawlerJob {
           continue;
         }
 
-        // Generate TTS URL
-        const audioUrl = generateTTSUrl(collocationData.phrase, "en-US");
+        // Note: Now using Web Speech API on frontend, no need for external TTS URLs
+        const audioUrl = generateTTSUrl(collocationData.phrase, "en-US"); // Will be null
 
         // Create new collocation
         const collocation = new Collocation({
