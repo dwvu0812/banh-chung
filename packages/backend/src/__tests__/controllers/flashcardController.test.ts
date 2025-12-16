@@ -198,7 +198,7 @@ describe("Flashcard Controller", () => {
         .send({ lang: "en-US" });
 
       expect(response.status).toBe(200);
-      expect(response.body.audioUrl).toContain("translate.google.com");
+      expect(response.body.audioUrl).toBeNull(); // TTS function returns null to use Web Speech API
       expect(mockCard.save).toHaveBeenCalled();
     });
   });

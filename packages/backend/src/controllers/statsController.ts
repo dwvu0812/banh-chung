@@ -344,17 +344,21 @@ export const getSRSAnalytics = async (req: AuthRequest, res: Response): Promise<
     const studySessions = await StudySession.find({
       user: userId,
       createdAt: { $gte: startDate },
-    }).select('cardsReviewed reviewData createdAt');
+    }).select('cardsReviewed cardsCorrect cardsIncorrect averageQuality duration createdAt');
 
-    // Transform study session data for SRS analytics
-    const reviewHistory = studySessions.flatMap(session => 
-      session.reviewData?.map((review: any) => ({
-        quality: review.quality || 3,
-        interval: review.interval || 1,
-        reviewTime: review.timeSpent || 0,
-        createdAt: session.createdAt,
-      })) || []
-    );
+    // Transform study session data for SRS analytics using available aggregate data
+    const reviewHistory = studySessions.flatMap(session => {
+      const reviews = [];
+      for (let i = 0; i < session.cardsReviewed; i++) {
+        reviews.push({
+          quality: session.averageQuality || 3,
+          interval: 1, // Default interval since we don't have individual card data
+          reviewTime: session.duration ? session.duration / session.cardsReviewed : 0,
+          createdAt: session.createdAt,
+        });
+      }
+      return reviews;
+    });
 
     const analytics = calculateSRSAnalytics(reviewHistory);
 

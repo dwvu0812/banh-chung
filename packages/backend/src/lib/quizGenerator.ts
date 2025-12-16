@@ -35,11 +35,32 @@ export function generateDefinitionChoice(
   allCollocations: ICollocation[],
   questionIndex: number
 ): QuizQuestion {
-  // Get 3 random wrong answers from other collocations
+  // Get random wrong answers from other collocations
   const otherCollocations = allCollocations.filter(
     (c) => c._id.toString() !== collocation._id.toString()
   );
-  const wrongAnswers = getRandomItems(otherCollocations, 3).map((c) => c.meaning);
+  let wrongAnswers = getRandomItems(otherCollocations, 3).map((c) => c.meaning);
+
+  // If we don't have enough wrong answers, add some generic ones
+  const fallbackAnswers = [
+    "làm việc chăm chỉ",
+    "nói chuyện",
+    "ăn cơm",
+    "đi học",
+    "chơi game",
+    "xem phim",
+    "nghe nhạc"
+  ];
+
+  while (wrongAnswers.length < 3) {
+    const fallback = fallbackAnswers[wrongAnswers.length % fallbackAnswers.length];
+    if (!wrongAnswers.includes(fallback) && fallback !== collocation.meaning) {
+      wrongAnswers.push(fallback);
+    }
+  }
+
+  // Ensure exactly 3 wrong answers
+  wrongAnswers = wrongAnswers.slice(0, 3);
 
   // Combine correct and wrong answers, then shuffle
   const options = shuffleArray([collocation.meaning, ...wrongAnswers]);

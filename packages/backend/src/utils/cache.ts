@@ -74,7 +74,7 @@ class RedisCache implements ICacheService {
     
     try {
       const value = await this.client.get(`collocation:${key}`);
-      return value ? JSON.parse(value) : null;
+      return value && typeof value === 'string' ? JSON.parse(value) : null;
     } catch (error) {
       console.error('Redis get error:', error);
       return null;
@@ -221,7 +221,7 @@ class CacheService {
   private useRedis: boolean;
 
   constructor() {
-    this.useRedis = process.env.NODE_ENV === 'production' && process.env.REDIS_URL;
+    this.useRedis = process.env.NODE_ENV === 'production' && Boolean(process.env.REDIS_URL);
     this.primaryCache = this.useRedis ? new RedisCache() : new MemoryCache();
     this.fallbackCache = new MemoryCache();
   }
@@ -310,11 +310,11 @@ class CacheService {
   }
 
   // Collocation-specific cache methods
-  async cacheCollocations(key: string, collocations: any[], ttl: number = 300): Promise<void> {
-    await this.set(`collocations:${key}`, collocations, ttl);
+  async cacheCollocations(key: string, data: any, ttl: number = 300): Promise<void> {
+    await this.set(`collocations:${key}`, data, ttl);
   }
 
-  async getCachedCollocations(key: string): Promise<any[] | null> {
+  async getCachedCollocations(key: string): Promise<any | null> {
     return await this.get(`collocations:${key}`);
   }
 

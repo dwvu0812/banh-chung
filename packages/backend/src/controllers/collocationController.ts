@@ -90,7 +90,7 @@ export const getCollocations = async (req: AuthRequest, res: Response): Promise<
     sortStage[sortBy as string] = sortOrder === 'asc' ? 1 : -1;
 
     // Use aggregation pipeline for better performance
-    const pipeline = [
+    const pipeline: any[] = [
       { $match: matchStage },
       {
         $lookup: {
@@ -190,7 +190,7 @@ export const getCollocationsByDeck = async (req: AuthRequest, res: Response): Pr
     }
 
     // Use projection to only fetch needed fields for better performance
-    const projection = {
+    const projection: any = {
       phrase: 1,
       meaning: 1,
       components: 1,
