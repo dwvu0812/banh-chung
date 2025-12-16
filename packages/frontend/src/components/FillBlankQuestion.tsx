@@ -17,7 +17,7 @@ export default function FillBlankQuestion({
   correctAnswer,
   onAnswer,
   savedAnswer,
-}: FillBlankQuestionProps): JSX.Element {
+}: FillBlankQuestionProps) {
   const [userAnswer, setUserAnswer] = useState<string>(savedAnswer || "");
 
   const handleSubmit = (): void => {

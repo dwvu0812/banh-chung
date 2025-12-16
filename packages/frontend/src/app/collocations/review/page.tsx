@@ -28,7 +28,7 @@ interface Collocation {
   difficulty: string;
 }
 
-export default function CollocationReviewPage(): JSX.Element {
+export default function CollocationReviewPage() {
   const router = useRouter();
   const { logout } = useAuthStore();
   

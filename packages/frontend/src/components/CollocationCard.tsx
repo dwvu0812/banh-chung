@@ -29,7 +29,7 @@ interface CollocationCardProps {
   onClick?: () => void;
 }
 
-export default function CollocationCard({ collocation, onClick }: CollocationCardProps): JSX.Element {
+export default function CollocationCard({ collocation, onClick }: CollocationCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [ttsError, setTtsError] = useState<string | null>(null);

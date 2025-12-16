@@ -24,7 +24,7 @@ interface QuizResult {
   completedAt: string;
 }
 
-export default function QuizResultsPage(): JSX.Element {
+export default function QuizResultsPage() {
   const router = useRouter();
   const [results, setResults] = useState<QuizResult[]>([]);
   const [loading, setLoading] = useState(true);

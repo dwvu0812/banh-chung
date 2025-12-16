@@ -22,7 +22,7 @@ interface QuizCardProps {
   quiz: Quiz;
 }
 
-export default function QuizCard({ quiz }: QuizCardProps): JSX.Element {
+export default function QuizCard({ quiz }: QuizCardProps) {
   const router = useRouter();
 
   const getDifficultyColor = (difficulty: string): string => {

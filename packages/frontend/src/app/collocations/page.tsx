@@ -38,7 +38,7 @@ interface CollocationsResponse {
   pagination: PaginationData;
 }
 
-export default function CollocationsPage(): JSX.Element {
+export default function CollocationsPage() {
   const router = useRouter();
   const [collocations, setCollocations] = useState<Collocation[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
@@ -100,7 +100,7 @@ export default function CollocationsPage(): JSX.Element {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
           <p className="min-text-body text-destructive mb-6">{error}</p>
-          <Button onClick={fetchCollocations} className="min-focus">
+          <Button onClick={() => fetchCollocations()} className="min-focus">
             Try Again
           </Button>
         </div>

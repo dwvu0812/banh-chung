@@ -39,7 +39,7 @@ export default function CollocationList({
   collocations,
   onCollocationClick,
   enableClientFiltering = true,
-}: CollocationListProps): React.JSX.Element {
+}: CollocationListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
 

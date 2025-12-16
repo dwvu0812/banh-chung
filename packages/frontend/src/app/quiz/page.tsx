@@ -19,7 +19,7 @@ interface Quiz {
   };
 }
 
-export default function QuizListPage(): JSX.Element {
+export default function QuizListPage() {
   const router = useRouter();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);

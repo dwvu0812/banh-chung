@@ -29,7 +29,7 @@ export function PaginationWrapper({
   totalPages,
   onPageChange,
   className,
-}: PaginationWrapperProps): React.JSX.Element {
+}: PaginationWrapperProps) {
   const generatePageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
     const showEllipsis = totalPages > 7;
@@ -135,7 +135,7 @@ export function PaginationInfo({
   totalItems,
   itemsPerPage,
   currentPage,
-}: PaginationInfoProps): React.JSX.Element {
+}: PaginationInfoProps) {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 

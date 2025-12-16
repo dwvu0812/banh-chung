@@ -20,7 +20,7 @@ export default function MultipleChoiceQuestion({
   correctAnswer,
   onAnswer,
   savedAnswer,
-}: MultipleChoiceQuestionProps): JSX.Element {
+}: MultipleChoiceQuestionProps) {
   const [selectedOption, setSelectedOption] = useState<string>(savedAnswer || "");
 
   const handleSubmit = (): void => {

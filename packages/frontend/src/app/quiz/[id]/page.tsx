@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Clock, CheckCircle } from "lucide-react";
 import api from "@/lib/api";
 
-export default function QuizTakePage(): JSX.Element {
+export default function QuizTakePage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
