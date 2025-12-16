@@ -30,7 +30,7 @@ interface Collocation {
   };
 }
 
-export default function CollocationDetailPage(): JSX.Element {
+export default function CollocationDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
