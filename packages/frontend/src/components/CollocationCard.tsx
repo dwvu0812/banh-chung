@@ -1,0 +1,180 @@
+"use client";
+
+import { useState } from "react";
+import { ChevronDown, ChevronUp, Volume2, VolumeX } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { speakText, playAudioFromUrl, isTTSSupported } from "@/lib/tts";
+
+interface CollocationComponent {
+  word: string;
+  meaning: string;
+  partOfSpeech?: string;
+}
+
+interface Collocation {
+  _id: string;
+  phrase: string;
+  meaning: string;
+  components: CollocationComponent[];
+  examples: string[];
+  pronunciation?: string;
+  tags: string[];
+  difficulty: "beginner" | "intermediate" | "advanced";
+}
+
+interface CollocationCardProps {
+  collocation: Collocation;
+  onClick?: () => void;
+}
+
+export default function CollocationCard({ collocation, onClick }: CollocationCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [ttsError, setTtsError] = useState<string | null>(null);
+
+  const playAudio = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (isPlaying) return;
+    
+    setIsPlaying(true);
+    setTtsError(null);
+
+    try {
+      // Try to use Web Speech API first
+      if (isTTSSupported()) {
+        await speakText(collocation.phrase, { lang: 'en-US' });
+      } 
+      // Fallback to audio URL if available (though likely to fail)
+      else if (collocation.pronunciation) {
+        await playAudioFromUrl(collocation.pronunciation);
+      } 
+      else {
+        throw new Error('No TTS option available');
+      }
+    } catch (error) {
+      console.warn('TTS failed:', error);
+      setTtsError('Audio unavailable');
+      
+      // Auto-clear error after 3 seconds
+      setTimeout(() => setTtsError(null), 3000);
+    } finally {
+      setIsPlaying(false);
+    }
+  };
+
+  const getDifficultyIndicator = (difficulty: string): string => {
+    switch (difficulty) {
+      case "beginner":
+        return "●";
+      case "intermediate":
+        return "●●";
+      case "advanced":
+        return "●●●";
+      default:
+        return "●";
+    }
+  };
+
+  return (
+    <div
+      className="min-card p-6 hover:shadow-md transition-shadow cursor-pointer min-animate-fadeIn"
+      onClick={onClick}
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h3 className="min-text-title">{collocation.phrase}</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={playAudio}
+              disabled={isPlaying}
+              className="h-6 w-6 p-0 min-focus opacity-60 hover:opacity-100"
+              title={ttsError ? ttsError : (isTTSSupported() ? 'Play pronunciation' : 'Text-to-speech not supported')}
+            >
+              {ttsError ? (
+                <VolumeX className="h-3 w-3 text-destructive" />
+              ) : (
+                <Volume2 className={`h-3 w-3 ${isPlaying ? "animate-pulse" : ""}`} />
+              )}
+            </Button>
+          </div>
+          <p className="min-text-caption mb-3">{collocation.meaning}</p>
+        </div>
+        <span className="min-text-caption text-primary font-mono">
+          {getDifficultyIndicator(collocation.difficulty)}
+        </span>
+      </div>
+
+      {/* Tags */}
+      {collocation.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {collocation.tags.slice(0, 3).map((tag, index) => (
+            <span key={index} className="min-text-caption bg-muted/50 px-2 py-1 rounded-sm">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Expandable Components */}
+      <div className="min-border-top pt-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className="min-button-ghost p-0 h-auto min-focus"
+        >
+          <span className="min-text-caption flex items-center gap-2">
+            {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {isExpanded ? "Hide" : "Show"} Details
+          </span>
+        </Button>
+
+        {isExpanded && (
+          <div className="mt-4 min-spacing-sm">
+            {/* Components */}
+            <div className="mb-4">
+              <p className="min-text-caption font-medium mb-2">Components:</p>
+              <div className="space-y-1">
+                {collocation.components.map((component, index) => (
+                  <div key={index} className="min-text-caption">
+                    <span className="font-medium">{component.word}</span>
+                    {component.partOfSpeech && (
+                      <span className="text-muted-foreground ml-2">
+                        ({component.partOfSpeech})
+                      </span>
+                    )}
+                    <span className="text-muted-foreground ml-2">- {component.meaning}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Examples */}
+            {collocation.examples.length > 0 && (
+              <div>
+                <p className="min-text-caption font-medium mb-2">Examples:</p>
+                <div className="space-y-1">
+                  {collocation.examples.slice(0, 2).map((example, index) => (
+                    <p key={index} className="min-text-caption text-muted-foreground italic">
+                      "{example}"
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

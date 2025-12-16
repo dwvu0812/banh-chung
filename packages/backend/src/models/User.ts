@@ -1,9 +1,16 @@
 import { Schema, model, Document } from "mongoose";
 
+export enum UserRole {
+  USER = "user",
+  ADMIN = "admin",
+  SUPER_ADMIN = "super_admin",
+}
+
 export interface IUser extends Document {
   username: string;
   email: string;
   passwordHash: string;
+  role: UserRole;
   learningSettings: {
     dailyTarget: number;
     voiceSpeed: number;
@@ -38,6 +45,12 @@ const userSchema = new Schema<IUser>(
     passwordHash: {
       type: String,
       required: [true, "Password hash is required"],
+    },
+    role: {
+      type: String,
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
+      index: true,
     },
     learningSettings: {
       dailyTarget: {

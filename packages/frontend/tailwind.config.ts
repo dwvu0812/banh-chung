@@ -55,6 +55,32 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xs: "calc(var(--radius) - 4px)", /* Extra small for minimal design */
+      },
+      /* Minimalist spacing scale */
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '128': '32rem',
+      },
+      /* Minimal shadow scale */
+      boxShadow: {
+        'minimal': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+        'minimal-lg': '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+      },
+      /* Clean typography */
+      fontWeight: {
+        'ultralight': '100',
+        'extralight': '200',
+      },
+      /* Minimal line heights */
+      lineHeight: {
+        'extra-relaxed': '1.75',
+        'ultra-relaxed': '2',
+      },
+      /* Clean letter spacing */
+      letterSpacing: {
+        'extra-wide': '0.1em',
       },
     },
   },

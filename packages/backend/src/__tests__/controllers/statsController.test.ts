@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Mock protect middleware
 (protect as jest.Mock).mockImplementation((req, res, next) => {
-  req.user = { userId: "testUserId" };
+  req.user = { userId: "507f1f77bcf86cd799439011" }; // Valid MongoDB ObjectId format
   next();
 });
 
@@ -44,6 +44,14 @@ describe("Stats Controller", () => {
         totalCards: 50,
         newCardsToday: 5,
         totalDecks: 3,
+        collocation: {
+          dueToday: 0,
+          total: 0,
+        },
+        quiz: {
+          averageScore: 0,
+          totalTaken: 0,
+        },
       });
     });
   });
@@ -51,9 +59,9 @@ describe("Stats Controller", () => {
   describe("GET /api/stats/deck/:deckId - getDeckStats", () => {
     it("should return deck statistics", async () => {
       const mockDeck = {
-        _id: "deckId",
+        _id: "507f1f77bcf86cd799439012", // Valid ObjectId format
         name: "Test Deck",
-        user: "testUserId",
+        user: "507f1f77bcf86cd799439011", // Same as the user ID in mock
       };
 
       (Deck.findById as jest.Mock).mockResolvedValue(mockDeck);
@@ -63,11 +71,11 @@ describe("Stats Controller", () => {
         .mockResolvedValueOnce(15) // masteredCards
         .mockResolvedValueOnce(5); // newCards
 
-      const response = await request(app).get("/api/stats/deck/deckId");
+      const response = await request(app).get("/api/stats/deck/507f1f77bcf86cd799439012");
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
-        deckId: "deckId",
+        deckId: "507f1f77bcf86cd799439012",
         deckName: "Test Deck",
         totalCards: 20,
         cardsDue: 5,
@@ -80,7 +88,7 @@ describe("Stats Controller", () => {
     it("should return 404 if deck not found", async () => {
       (Deck.findById as jest.Mock).mockResolvedValue(null);
 
-      const response = await request(app).get("/api/stats/deck/deckId");
+      const response = await request(app).get("/api/stats/deck/507f1f77bcf86cd799439013");
 
       expect(response.status).toBe(404);
       expect(response.body.msg).toBe("Deck not found or access denied");

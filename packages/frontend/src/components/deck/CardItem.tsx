@@ -28,12 +28,24 @@ interface CardItemProps {
 export function CardItem({ card, onEdit, onDelete }: CardItemProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const handlePlayAudio = () => {
-    if (card.pronunciation) {
-      const audio = new Audio(card.pronunciation);
-      setIsPlaying(true);
-      audio.play();
-      audio.onended = () => setIsPlaying(false);
+  const handlePlayAudio = async () => {
+    if (isPlaying) return;
+    
+    setIsPlaying(true);
+    
+    try {
+      // Import TTS utilities (dynamic import to avoid SSR issues)
+      const { speakText, playAudioFromUrl, isTTSSupported } = await import('@/lib/tts');
+      
+      if (isTTSSupported()) {
+        await speakText(card.word, { lang: 'en-US' });
+      } else if (card.pronunciation) {
+        await playAudioFromUrl(card.pronunciation);
+      }
+    } catch (error) {
+      console.warn('TTS failed:', error);
+    } finally {
+      setIsPlaying(false);
     }
   };
 

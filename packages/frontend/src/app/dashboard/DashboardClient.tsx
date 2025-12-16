@@ -28,10 +28,12 @@ import { Label } from "@/components/ui/label";
 import {
   ArrowRight,
   BookCopy,
+  BookOpen,
   BrainCircuit,
   Layers,
   PlusCircle,
   Target,
+  Trophy,
 } from "lucide-react";
 
 // Định nghĩa kiểu dữ liệu cho Deck
@@ -51,6 +53,14 @@ interface DashboardStats {
   totalCards: number;
   newCardsToday: number;
   totalDecks: number;
+  collocation: {
+    total: number;
+    dueToday: number;
+  };
+  quiz: {
+    totalTaken: number;
+    averageScore: number;
+  };
 }
 
 // Hàm fetch dữ liệu
@@ -136,163 +146,192 @@ export default function DashboardClient() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      {/* === Header === */}
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-10">
-        <Logo />
-        <div className="ml-auto">
-          <Button onClick={logout} variant="outline">
-            Đăng xuất
-          </Button>
+    <div className="flex min-h-screen w-full flex-col bg-background">
+      {/* === Minimal Header === */}
+      <header className="min-border-bottom bg-background">
+        <div className="flex h-14 items-center gap-4 px-6">
+          <Logo />
+          <div className="ml-auto">
+            <Button onClick={logout} variant="ghost" size="sm" className="min-button-ghost min-focus">
+              Đăng xuất
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        {/* === Section Thống kê & Hành động chính === */}
-        <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Cần ôn tập hôm nay
-              </CardTitle>
-              <BookCopy className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats?.cardsDueToday || 0} thẻ
+      <main className="flex flex-1 flex-col px-6 py-8 min-spacing-lg">
+        {/* === Primary Collocation Learning Section === */}
+        <div className="max-w-4xl mx-auto w-full">
+          <div className="text-center mb-8">
+            <h1 className="min-text-display flex items-center justify-center gap-3 mb-2">
+              <BookOpen className="h-8 w-8 text-primary" />
+              English Collocations Learning
+            </h1>
+            <p className="min-text-caption">Master English through natural word combinations</p>
+          </div>
+
+          {/* Main CTA Card - Minimal Design */}
+          <div className="min-card p-8 text-center mb-8">
+            <h2 className="min-text-title mb-4">Start Learning Collocations</h2>
+            <div className="min-grid-stats mb-6">
+              <div className="text-center">
+                <div className="text-2xl font-light text-primary mb-1">
+                  {stats?.collocation?.total || 0}
+                </div>
+                <div className="min-text-caption">Available</div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Sẵn sàng để chinh phục!
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Mục tiêu ngày
-              </CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats?.newCardsToday || 0} thẻ mới
+              <div className="text-center">
+                <div className="text-2xl font-light text-foreground mb-1">
+                  {stats?.collocation?.dueToday || 0}
+                </div>
+                <div className="min-text-caption">Due Today</div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Hôm nay
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Tổng số từ đã học
-              </CardTitle>
-              <BrainCircuit className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats?.totalCards || 0}
+              <div className="text-center">
+                <div className="text-2xl font-light text-foreground mb-1">7</div>
+                <div className="min-text-caption">Categories</div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Tổng số từ
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="flex flex-col justify-center items-center bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-            <Link href="/review" className="w-full h-full">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                <div className="text-2xl font-bold">Bắt đầu ôn tập</div>
-                <p className="text-xs text-primary-foreground/80">
-                  Thử thách trí nhớ của bạn
-                </p>
-              </CardContent>
-            </Link>
-          </Card>
+              <div className="text-center">
+                <div className="text-2xl font-light text-foreground mb-1">
+                  {stats?.quiz?.totalTaken || 0}
+                </div>
+                <div className="min-text-caption">Quizzes Taken</div>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+              <Link href="/collocations" className="flex-1">
+                <Button size="lg" className="w-full min-focus">
+                  Browse Collocations
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/collocations/review" className="flex-1">
+                <Button variant="outline" size="lg" className="w-full min-focus">
+                  Start Review
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
-        {/* === Section Quản lý bộ thẻ === */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Tất cả bộ thẻ</h2>
+        {/* === Secondary Actions - Minimal Layout === */}
+        <div className="max-w-4xl mx-auto w-full">
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Quiz Section */}
+            <Link href="/quiz">
+              <div className="min-card p-6 text-center hover:shadow-md transition-shadow cursor-pointer">
+                <Trophy className="h-6 w-6 text-primary mx-auto mb-3" />
+                <h3 className="min-text-title mb-2">Quiz Performance</h3>
+                <div className="text-lg font-light text-foreground mb-1">
+                  {stats?.quiz?.averageScore || 0}%
+                </div>
+                <p className="min-text-caption">Average Score</p>
+              </div>
+            </Link>
+
+            {/* Review Section */}
+            <Link href="/review">
+              <div className="min-card p-6 text-center hover:shadow-md transition-shadow cursor-pointer">
+                <BookCopy className="h-6 w-6 text-primary mx-auto mb-3" />
+                <h3 className="min-text-title mb-2">Flashcard Review</h3>
+                <div className="text-lg font-light text-foreground mb-1">
+                  {stats?.cardsDueToday || 0}
+                </div>
+                <p className="min-text-caption">Cards Due Today</p>
+              </div>
+            </Link>
+
+            {/* Deck Management */}
+            <div className="min-card p-6 text-center">
+              <Layers className="h-6 w-6 text-primary mx-auto mb-3" />
+              <h3 className="min-text-title mb-2">Your Decks</h3>
+              <div className="text-lg font-light text-foreground mb-1">
+                {stats?.totalDecks || 0}
+              </div>
+              <p className="min-text-caption">Total Decks</p>
+            </div>
+          </div>
+        </div>
+
+        {/* === Deck Management - Simplified === */}
+        <div className="max-w-4xl mx-auto w-full">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="min-text-title">Manage Decks</h2>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="gap-1">
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Tạo bộ thẻ mới
-                  </span>
+                <Button variant="outline" size="sm" className="min-focus">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  New Deck
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="min-card">
                 <DialogHeader>
-                  <DialogTitle>Tạo bộ thẻ mới</DialogTitle>
+                  <DialogTitle className="min-text-title">Create New Deck</DialogTitle>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <Label htmlFor="name">Tên bộ thẻ</Label>
+                <div className="min-spacing-sm py-4">
+                  <Label htmlFor="name" className="min-text-caption">Deck Name</Label>
                   <Input
                     id="name"
                     value={newDeckName}
                     onChange={(e) => setNewDeckName(e.target.value)}
+                    className="min-focus"
                   />
-                  <Label htmlFor="description">Mô tả</Label>
+                  <Label htmlFor="description" className="min-text-caption">Description</Label>
                   <Input
                     id="description"
                     value={newDeckDesc}
                     onChange={(e) => setNewDeckDesc(e.target.value)}
+                    className="min-focus"
                   />
                 </div>
                 <Button
                   onClick={handleCreateDeck}
                   disabled={createDeckMutation.isPending}
-                  className="w-full"
+                  className="w-full min-focus"
                 >
-                  {createDeckMutation.isPending ? "Đang tạo..." : "Tạo"}
+                  {createDeckMutation.isPending ? "Creating..." : "Create Deck"}
                 </Button>
               </DialogContent>
             </Dialog>
           </div>
 
           {decksWithStats && decksWithStats.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="min-grid-auto">
               {decksWithStats.map((deck) => (
-                <Card key={deck._id} className="flex flex-col">
-                  <CardHeader>
-                    <CardTitle>{deck.name}</CardTitle>
-                    <CardDescription className="truncate">
-                      {deck.description || "Không có mô tả"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Layers className="h-4 w-4" />
-                      <span>{deck.cardCount} thẻ</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Target className="h-4 w-4" />
-                      <span>{deck.cardsDue} cần ôn tập</span>
-                    </div>
-                  </CardContent>
-                  <div className="p-6 pt-2 mt-auto">
-                    <Button asChild className="w-full">
-                      <Link href={`/decks/${deck._id}`}>
-                        Học ngay
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
+                <div key={deck._id} className="min-card p-6">
+                  <h3 className="min-text-title mb-2">{deck.name}</h3>
+                  <p className="min-text-caption mb-4 truncate">
+                    {deck.description || "No description"}
+                  </p>
+                  <div className="flex justify-between items-center mb-4 text-sm">
+                    <span className="min-text-caption">
+                      <Layers className="h-3 w-3 inline mr-1" />
+                      {deck.cardCount} cards
+                    </span>
+                    <span className="min-text-caption">
+                      <Target className="h-3 w-3 inline mr-1" />
+                      {deck.cardsDue} due
+                    </span>
                   </div>
-                </Card>
+                  <Link href={`/decks/${deck._id}`}>
+                    <Button size="sm" className="w-full min-focus">
+                      Study Now
+                      <ArrowRight className="ml-2 h-3 w-3" />
+                    </Button>
+                  </Link>
+                </div>
               ))}
             </div>
           ) : (
-            <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm py-20">
-              <div className="flex flex-col items-center gap-1 text-center">
-                <h3 className="text-2xl font-bold tracking-tight">
-                  Bạn chưa có bộ thẻ nào
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Hãy bắt đầu bằng cách tạo một bộ thẻ mới.
-                </p>
-              </div>
+            <div className="min-card p-12 text-center">
+              <h3 className="min-text-title mb-2">No decks yet</h3>
+              <p className="min-text-caption mb-4">
+                Start by creating your first deck or focus on collocations.
+              </p>
+              <Link href="/collocations">
+                <Button variant="outline" className="min-focus">
+                  Explore Collocations
+                </Button>
+              </Link>
             </div>
           )}
         </div>

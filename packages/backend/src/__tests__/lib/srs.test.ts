@@ -13,7 +13,7 @@ describe("SRS Algorithm (SM-2)", () => {
     it("should decrease ease factor for wrong answers", () => {
       const result = calculateSM2(1, 2, 5, 2.5);
 
-      expect(result.easeFactor).toBe(2.3); // 2.5 - 0.2
+      expect(result.easeFactor).toBe(2.25); // 2.5 - (0.15 + (3-1)*0.05) = 2.5 - 0.25
     });
 
     it("should not let ease factor go below 1.3", () => {

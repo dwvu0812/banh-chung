@@ -1,11 +1,175 @@
 ---
-description: 
-globs: 
+description: Banh Chung Project - Node.js, React, Next.js, TypeScript Best Practices
+globs:
 alwaysApply: true
 ---
-Keep file size as small as possible (less then 250 lines)
-Do not over implement, code step by step for me to easy to review
 
-Always call interactive feedback mcp to optimize request calls
+# General Principles
 
-When create new feature always write tests first (TDD)
+- Keep file size as small as possible (less than 250 lines)
+- Do not over-implement, code step by step for easy review
+- When creating new features, always write tests first (TDD approach)
+
+# TypeScript Best Practices
+
+- Use strict TypeScript configuration (`strict: true`)
+- Always define explicit return types for functions
+- Use interfaces for object shapes, types for unions/intersections
+- Avoid `any` type - use `unknown` when type is truly unknown
+- Use const assertions for literal types
+- Leverage TypeScript utility types (Partial, Pick, Omit, etc.)
+- Use enums sparingly, prefer string literal unions
+- Define types in separate `types` or `interfaces` files when shared
+
+# Node.js/Express Backend Best Practices
+
+- Follow MVC pattern: separate routes, controllers, models, middleware
+- Always use async/await instead of callbacks
+- Handle all errors with try-catch blocks
+- Use express-validator or Zod for request validation
+- Implement proper error handling middleware
+- Use environment variables for configuration (never hardcode secrets)
+- Apply rate limiting to prevent abuse
+- Implement proper authentication/authorization middleware
+- Use mongoose for MongoDB with proper schema validation
+- Always sanitize user input to prevent NoSQL injection
+- Use meaningful HTTP status codes (200, 201, 400, 401, 403, 404, 500)
+- Log errors with proper context but never log sensitive data
+- Use transactions for multi-document operations
+
+# React/Next.js Frontend Best Practices
+
+- Use functional components with hooks (no class components)
+- Follow Next.js App Router conventions (app directory structure)
+- Use Server Components by default, Client Components only when needed
+- Mark client components with 'use client' directive at the top
+- Implement proper loading states with loading.tsx and Suspense
+- Handle errors with error.tsx boundary components
+- Use Next.js Image component for optimized images
+- Implement proper SEO with metadata API
+- Use React hooks correctly:
+  - useState for local state
+  - useEffect for side effects (minimize usage)
+  - useMemo/useCallback for performance optimization
+  - Custom hooks for reusable logic
+- Avoid prop drilling - use Context API or state management
+- Keep components small and focused (single responsibility)
+- Use TypeScript props interfaces for all components
+
+# Code Organization
+
+- One component/function per file (except small helper components)
+- Group related files in feature-based folders
+- Use barrel exports (index.ts) for cleaner imports
+- Name files consistently:
+  - Components: PascalCase (UserProfile.tsx)
+  - Utilities: camelCase (formatDate.ts)
+  - Hooks: camelCase with 'use' prefix (useAuth.ts)
+  - Types: PascalCase (User.ts or types.ts)
+- Keep folder structure flat - avoid deep nesting
+
+# Testing Best Practices
+
+- Write tests before implementation (TDD)
+- Follow AAA pattern: Arrange, Act, Assert
+- Use descriptive test names that explain the behavior
+- Test user behavior, not implementation details
+- Mock external dependencies (APIs, databases)
+- Achieve high code coverage (aim for 80%+)
+- Use integration tests for critical user flows
+- Test edge cases and error scenarios
+- Keep tests isolated and independent
+
+# State Management
+
+- Use React Context for global UI state
+- Use Zustand/Redux for complex application state
+- Keep server state separate with React Query/SWR
+- Derive state when possible instead of storing it
+- Minimize state - keep it as close to where it's used as possible
+
+# API Design
+
+- Follow RESTful conventions
+- Use consistent naming (plural nouns for resources)
+- Version APIs when making breaking changes
+- Return consistent error response format
+- Use proper HTTP methods (GET, POST, PUT, DELETE, PATCH)
+- Implement pagination for list endpoints
+- Add filtering and sorting capabilities
+- Document APIs with clear descriptions
+
+# Security Best Practices
+
+- Validate all user input
+- Sanitize data before database operations
+- Use parameterized queries to prevent SQL/NoSQL injection
+- Implement rate limiting on all endpoints
+- Use HTTPS in production
+- Store passwords with bcrypt (salt rounds: 10+)
+- Use secure JWT tokens with short expiration
+- Implement CORS properly
+- Never expose sensitive data in responses
+- Use helmet for security headers
+- Implement CSRF protection for state-changing operations
+
+# Performance Optimization
+
+- Use React.memo for expensive components
+- Implement code splitting with dynamic imports
+- Optimize images (use Next.js Image component)
+- Use pagination for large data sets
+- Implement proper caching strategies
+- Minimize bundle size (check with bundle analyzer)
+- Use lazy loading for below-the-fold content
+- Optimize database queries (add indexes)
+- Use connection pooling for databases
+
+# Error Handling
+
+- Always catch and handle errors appropriately
+- Provide meaningful error messages to users
+- Log errors with stack traces for debugging
+- Use error boundaries in React
+- Return consistent error response format from API
+- Never expose internal error details to clients
+- Implement proper fallback UI for errors
+
+# Code Quality
+
+- Use ESLint and Prettier for consistent formatting
+- Write self-documenting code with clear variable names
+- Add comments only when code cannot be self-explanatory
+- Follow SOLID principles
+- Keep functions small and focused (single responsibility)
+- Avoid code duplication (DRY principle)
+- Use meaningful variable and function names
+- Avoid magic numbers - use named constants
+
+# Git Workflow
+
+- Write clear, descriptive commit messages
+- Use conventional commits (feat:, fix:, docs:, etc.)
+- Keep commits small and focused
+- Create feature branches for new work
+- Never commit sensitive data or credentials
+- Run tests before committing
+- Review your own code before requesting review
+
+# Environment & Configuration
+
+- Use .env files for environment variables
+- Never commit .env files to version control
+- Provide .env.example with dummy values
+- Document all required environment variables
+- Use different configs for dev/staging/production
+- Validate environment variables on startup
+
+# Dependencies
+
+- Keep dependencies up to date
+- Audit dependencies regularly for vulnerabilities
+- Use exact versions in package-lock.json
+- Remove unused dependencies
+- Prefer well-maintained packages with good documentation
+- Check package size before adding new dependencies

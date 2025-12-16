@@ -1,4 +1,5 @@
 // Pagination utility functions
+import { Request } from "express";
 
 export interface PaginationParams {
   page: number;
@@ -45,6 +46,21 @@ export const validatePagination = (
 };
 
 /**
+ * Extract pagination parameters from Express request
+ * @param req - Express request object
+ * @param maxLimit - Maximum allowed limit (default: 100)
+ * @returns Validated pagination parameters
+ */
+export const getPaginationParams = (
+  req: Request,
+  maxLimit: number = 100
+): PaginationParams => {
+  const { page, limit } = req.query;
+
+  return validatePagination(page as string, limit as string, maxLimit);
+};
+
+/**
  * Calculate pagination metadata
  * @param total - Total number of items
  * @param page - Current page number
@@ -66,4 +82,3 @@ export const getPaginationMeta = (
     hasPrev: page > 1,
   };
 };
-
