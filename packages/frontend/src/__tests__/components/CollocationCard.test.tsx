@@ -35,7 +35,8 @@ describe("CollocationCard", () => {
   it("should display difficulty badge", () => {
     render(<CollocationCard collocation={mockCollocation} onClick={mockOnClick} />);
 
-    expect(screen.getByText("beginner")).toBeInTheDocument();
+    // The difficulty is now shown as a dot indicator, not text
+    expect(screen.getByText("●")).toBeInTheDocument();
   });
 
   it("should display tags", () => {
@@ -46,22 +47,28 @@ describe("CollocationCard", () => {
     expect(screen.getByText("essential")).toBeInTheDocument();
   });
 
-  it("should display examples", () => {
+  it("should display examples when expanded", () => {
     render(<CollocationCard collocation={mockCollocation} onClick={mockOnClick} />);
 
+    // First expand the component
+    const expandButton = screen.getByRole("button", { name: /Show Details/i });
+    fireEvent.click(expandButton);
+
+    // Then check if examples are visible
     expect(screen.getByText(/We need to make a decision/)).toBeInTheDocument();
   });
 
   it("should expand components when button is clicked", () => {
     render(<CollocationCard collocation={mockCollocation} onClick={mockOnClick} />);
 
-    const expandButton = screen.getByRole("button", { name: /Show Components/i });
+    const expandButton = screen.getByRole("button", { name: /Show Details/i });
     fireEvent.click(expandButton);
 
-    expect(screen.getByText("make")).toBeInTheDocument();
-    expect(screen.getByText("làm")).toBeInTheDocument();
-    expect(screen.getByText("decision")).toBeInTheDocument();
-    expect(screen.getByText("quyết định")).toBeInTheDocument();
+    // Check that component details are visible after expansion
+    expect(screen.getByText("Components:")).toBeInTheDocument();
+    expect(screen.getByText("Examples:")).toBeInTheDocument();
+    expect(screen.getByText("(verb)")).toBeInTheDocument();
+    expect(screen.getByText("(noun)")).toBeInTheDocument();
   });
 
   it("should call onClick when card is clicked", () => {
