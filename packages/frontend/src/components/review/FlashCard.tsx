@@ -4,12 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CollocationComponent {
   word: string;
@@ -27,13 +22,13 @@ interface BaseFlashCardProps {
 }
 
 interface VocabularyCardProps extends BaseFlashCardProps {
-  type: 'vocabulary';
+  type: "vocabulary";
   word: string;
   definition: string;
 }
 
 interface CollocationCardProps extends BaseFlashCardProps {
-  type: 'collocation';
+  type: "collocation";
   phrase: string;
   meaning: string;
   components?: CollocationComponent[];
@@ -46,7 +41,8 @@ export function FlashCard(props: FlashCardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showComponents, setShowComponents] = useState(false);
 
-  const { pronunciation, examples, tags, difficulty, onFlip, className } = props;
+  const { pronunciation, examples, tags, difficulty, onFlip, className } =
+    props;
 
   const handleFlip = () => {
     const newFlipped = !isFlipped;
@@ -56,23 +52,26 @@ export function FlashCard(props: FlashCardProps) {
 
   const handlePlayAudio = async () => {
     if (!pronunciation || isPlaying) return;
-    
+
     setIsPlaying(true);
-    
+
     try {
-      // Import TTS utilities (dynamic import to avoid SSR issues)  
-      const { speakText, playAudioFromUrl, isTTSSupported } = await import('@/lib/tts');
-      
+      // Import TTS utilities (dynamic import to avoid SSR issues)
+      const { speakText, playAudioFromUrl, isTTSSupported } = await import(
+        "@/lib/tts"
+      );
+
       // Determine the text to speak based on card type
-      const textToSpeak = props.type === 'vocabulary' ? props.word : props.phrase;
-      
+      const textToSpeak =
+        props.type === "vocabulary" ? props.word : props.phrase;
+
       if (isTTSSupported()) {
-        await speakText(textToSpeak, { lang: 'en-US' });
+        await speakText(textToSpeak, { lang: "en-US" });
       } else if (pronunciation) {
         await playAudioFromUrl(pronunciation);
       }
     } catch (error) {
-      console.warn('TTS failed:', error);
+      console.warn("TTS failed:", error);
     } finally {
       setIsPlaying(false);
     }
@@ -91,11 +90,14 @@ export function FlashCard(props: FlashCardProps) {
     }
   };
 
-  const frontContent = props.type === 'vocabulary' ? props.word : props.phrase;
-  const backDefinition = props.type === 'vocabulary' ? props.definition : props.meaning;
+  const frontContent = props.type === "vocabulary" ? props.word : props.phrase;
+  const backDefinition =
+    props.type === "vocabulary" ? props.definition : props.meaning;
 
   return (
-    <div className={`perspective-1000 w-full max-w-2xl mx-auto ${className || ''}`}>
+    <div
+      className={`perspective-1000 w-full max-w-2xl mx-auto ${className || ""}`}
+    >
       <motion.div
         className="relative w-full h-96 cursor-pointer"
         animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -106,20 +108,24 @@ export function FlashCard(props: FlashCardProps) {
         {/* Front Side */}
         <Card
           className="absolute w-full h-full flex items-center justify-center backface-hidden hover:shadow-xl transition-shadow duration-300"
-          style={{ 
+          style={{
             backfaceVisibility: "hidden",
-            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"
+            transform: "rotateY(0deg)",
           }}
         >
           <CardHeader className="text-center w-full">
             {difficulty && (
               <div className="flex justify-center mb-4">
-                <div className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(difficulty)}`}>
+                <div
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(
+                    difficulty
+                  )}`}
+                >
                   {difficulty.toUpperCase()}
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-center justify-center gap-4 mb-6">
               <CardTitle className="text-4xl font-bold text-primary leading-tight text-center">
                 {frontContent}
@@ -134,14 +140,17 @@ export function FlashCard(props: FlashCardProps) {
                   }}
                   disabled={isPlaying}
                 >
-                  <Volume2 className={`h-4 w-4 ${isPlaying ? "animate-pulse" : ""}`} />
+                  <Volume2
+                    className={`h-4 w-4 ${isPlaying ? "animate-pulse" : ""}`}
+                  />
                 </Button>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <p className="text-muted-foreground">
-                Click to reveal {props.type === 'vocabulary' ? 'definition' : 'meaning'}
+                Click to reveal{" "}
+                {props.type === "vocabulary" ? "definition" : "meaning"}
               </p>
               <p className="text-xs text-muted-foreground">
                 Press Space to flip • ESC to exit
@@ -153,15 +162,19 @@ export function FlashCard(props: FlashCardProps) {
         {/* Back Side */}
         <Card
           className="absolute w-full h-full backface-hidden overflow-y-auto"
-          style={{ 
+          style={{
             backfaceVisibility: "hidden",
-            transform: isFlipped ? "rotateY(0deg)" : "rotateY(-180deg)"
+            transform: "rotateY(180deg)",
           }}
         >
           <CardHeader className="text-center space-y-4">
             <div className="flex items-center justify-center gap-4">
               {difficulty && (
-                <div className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(difficulty)}`}>
+                <div
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(
+                    difficulty
+                  )}`}
+                >
                   {difficulty.toUpperCase()}
                 </div>
               )}
@@ -175,10 +188,12 @@ export function FlashCard(props: FlashCardProps) {
                   }}
                   disabled={isPlaying}
                 >
-                  <Volume2 className={`h-4 w-4 ${isPlaying ? "animate-pulse" : ""}`} />
+                  <Volume2
+                    className={`h-4 w-4 ${isPlaying ? "animate-pulse" : ""}`}
+                  />
                 </Button>
               )}
-              {props.type === 'collocation' && props.components && (
+              {props.type === "collocation" && props.components && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -187,16 +202,20 @@ export function FlashCard(props: FlashCardProps) {
                     setShowComponents(!showComponents);
                   }}
                 >
-                  {showComponents ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showComponents ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               )}
             </div>
-            
+
             <CardTitle className="text-2xl font-bold text-primary">
               {frontContent}
             </CardTitle>
-            
-            <motion.div 
+
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -204,12 +223,12 @@ export function FlashCard(props: FlashCardProps) {
             >
               {backDefinition}
             </motion.div>
-            
+
             {/* Collocation Components */}
-            {props.type === 'collocation' && props.components && (
+            {props.type === "collocation" && props.components && (
               <AnimatePresence>
                 {showComponents && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
@@ -221,17 +240,23 @@ export function FlashCard(props: FlashCardProps) {
                     </h4>
                     <div className="flex flex-wrap gap-2 justify-center">
                       {props.components.map((component, index) => (
-                        <motion.div 
+                        <motion.div
                           key={index}
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: index * 0.1 }}
                           className="bg-muted p-2 rounded-lg text-center text-sm"
                         >
-                          <div className="font-semibold text-primary">{component.word}</div>
-                          <div className="text-xs text-muted-foreground">{component.meaning}</div>
+                          <div className="font-semibold text-primary">
+                            {component.word}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {component.meaning}
+                          </div>
                           {component.partOfSpeech && (
-                            <div className="text-xs text-blue-600 italic">({component.partOfSpeech})</div>
+                            <div className="text-xs text-blue-600 italic">
+                              ({component.partOfSpeech})
+                            </div>
                           )}
                         </motion.div>
                       ))}
@@ -243,7 +268,7 @@ export function FlashCard(props: FlashCardProps) {
 
             {/* Examples */}
             {examples && examples.length > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
@@ -254,7 +279,7 @@ export function FlashCard(props: FlashCardProps) {
                 </h4>
                 <div className="space-y-2">
                   {examples.slice(0, 2).map((example, index) => (
-                    <motion.p 
+                    <motion.p
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -270,14 +295,14 @@ export function FlashCard(props: FlashCardProps) {
 
             {/* Tags */}
             {tags && tags.length > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
                 className="flex flex-wrap gap-1 justify-center"
               >
                 {tags.slice(0, 4).map((tag, index) => (
-                  <span 
+                  <span
                     key={index}
                     className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
                   >
@@ -292,4 +317,3 @@ export function FlashCard(props: FlashCardProps) {
     </div>
   );
 }
-
